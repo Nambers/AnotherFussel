@@ -30,7 +30,7 @@ Sadly need several !important to override the default gatsby styles
 }
 
 .gallery-image {
-    width: "100%";
+    width: 100%;
     display: "block";
     cursor: pointer;
 }

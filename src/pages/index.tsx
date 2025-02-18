@@ -1,19 +1,22 @@
 import * as React from "react"
-// import Masonry, { ResponsiveMasonry } from "react-responsive-masonry"
 import { Layout } from "../components/layout"
-import { AlbumData } from "../../gatsby-node"
 import { GatsbyImage, getImage } from "gatsby-plugin-image"
 import { PageProps, Link, HeadFC, graphql } from "gatsby"
+
 import "../styles/index.css"
 
-const IndexPage: React.FC<PageProps> = ({ data }) => {
-  const albums: [AlbumData] = data.allPhotoAlbum.edges
+import type { IndexPageQueryQuery } from "../generated/graphql"
 
-  const generateCards = (albums: [AlbumData]) => {
-    return albums.map((album: AlbumData) => generateCard(album.node))
+type AlbumsType = IndexPageQueryQuery["allPhotoAlbum"]["edges"]
+
+const IndexPage: React.FC<PageProps<IndexPageQueryQuery>> = ({ data }) => {
+  const albums = data.allPhotoAlbum.edges
+
+  const generateCards = (albums: AlbumsType) => {
+    return albums.map((album) => generateCard(album.node))
   }
 
-  const generateCard = (subject: AlbumData) => {
+  const generateCard = (subject: AlbumsType[0]["node"]) => {
     return (
       <Link key={subject.slug} className="column is-one-quarter" to={"/albums/" + subject.slug}>
         <div className="card">
@@ -21,7 +24,7 @@ const IndexPage: React.FC<PageProps> = ({ data }) => {
             <figure className="image is-4by3 subject-photo">
               <GatsbyImage
                 className="subject-photo"
-                image={getImage(subject.coverFile)}
+                image={getImage(subject.coverFile?.childImageSharp?.gatsbyImageData)!}
                 alt={subject.name} />
             </figure>
           </div>

@@ -1,6 +1,5 @@
 import React from "react"
 import { Slice } from "gatsby"
-import { NavBar } from "./navbar"
 
 interface LayoutProps {
     children?: React.ReactNode;

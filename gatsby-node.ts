@@ -1,5 +1,5 @@
 import { CreateSchemaCustomizationArgs, SourceNodesArgs } from "gatsby";
-import { FileNode } from 'gatsby-plugin-image/dist/src/components/hooks'
+import type { AlbumsQueryQuery } from "./src/generated/graphql";
 
 const fs = require('fs');
 const exifr = require('exifr');
@@ -7,14 +7,14 @@ const path = require('path');
 const slugify = require('slugify');
 
 export type ExifData = {
-    [key: string]: string | number | Date | undefined
+    [key: string]: string | number
 }
 
 export type PhotoData = {
     name: string
-    path: string
     exif: ExifData
     slug: string
+    path: string
 }
 
 export type AlbumData = {
@@ -44,62 +44,85 @@ export const createSchemaCustomization = ({ actions: { createTypes } }: CreateSc
     createTypes(typeDefs)
 }
 
+const parsePhotos = async (albumPath: string): Promise<AlbumData[]> => {
+    const files = fs.readdirSync(albumPath);
+
+    const [photoFiles, subAlbums] = files.reduce((acc: [string[], string[]], file: string) => {
+        const fullPath = `${albumPath}/${file}`;
+        if (fs.statSync(fullPath).isDirectory()) {
+            acc[1].push(file);
+        } else if (/\.(jpg|jpeg|png|gif|webp)$/i.test(file)) { // 顺便加了几个常用格式 (｡･ω･｡)
+            acc[0].push(file);
+        }
+        return acc;
+    }, [[], []] as [string[], string[]]);
+
+    console.log(`Found ${photoFiles.length} photos, ${subAlbums.length} sub-albums in album ${albumPath}`);
+
+    const processPhoto = async (photo: string): Promise<PhotoData> => {
+        const photoPath = `${albumPath}/${photo}`;
+        const relPhotoPath = path.relative(`${__dirname}/src/images/`, photoPath);
+        console.log(`Processing photo: ${relPhotoPath}`);
+
+        try {
+            const exif = await exifr.parse(photoPath) || {};
+            return {
+                name: photo,
+                path: relPhotoPath,
+                exif,
+                slug: slugify(photo, { lower: true })
+            };
+        } catch (error) {
+            console.error(`Error parsing EXIF for ${photoPath}:`, error);
+            return {
+                name: photo,
+                path: relPhotoPath,
+                exif: {},
+                slug: slugify(photo, { lower: true })
+            };
+        }
+    };
+
+    const photos = await Promise.all(photoFiles.map(processPhoto));
+
+    photos.sort((a, b) => {
+        const dateA = a.exif.DateTimeOriginal ? new Date(a.exif.DateTimeOriginal).getTime() : 0;
+        const dateB = b.exif.DateTimeOriginal ? new Date(b.exif.DateTimeOriginal).getTime() : 0;
+        return dateA - dateB;
+    });
+
+    const currentAlbum: AlbumData[] = photos.length ? [{
+        name: path.relative(`${__dirname}/src/images/input`, albumPath),
+        photos,
+        slug: slugify(path.basename(albumPath), { lower: true }),
+        cover: photos[0].path
+    }] : [];
+
+    const subAlbumResults = await Promise.all(
+        subAlbums.map((subAlbum: string) => parsePhotos(`${albumPath}/${subAlbum}`))
+    );
+
+    return currentAlbum.concat(...subAlbumResults);
+};
+
+
 export const sourceNodes = async ({
     actions: { createNode },
     createContentDigest
 }: SourceNodesArgs): Promise<void> => {
-    const albumsPath = `${__dirname}/src/images/input/`
+    const albumsPath = `${__dirname}/src/images/input`
 
     try {
-        const albumDirs = fs.readdirSync(albumsPath)
-
-        await Promise.all(
-            albumDirs.map(async (albumName: string) => {
-                const albumPath = `${albumsPath}${albumName}`
-                const photoFiles = fs.readdirSync(albumPath)
-                    // TODO more type?
-                    .filter((file: string) => /\.(jpg|jpeg|png)$/i.test(file))
-
-                const photos: PhotoData[] = await Promise.all(
-                    photoFiles.map(async (photo: string): Promise<PhotoData> => {
-                        const photoPath = `${albumPath}/${photo}`
-                        const relPhotoPath = path.relative(`${__dirname}/src/images/`, photoPath)
-                        console.log(`Processing photo: ${relPhotoPath}`)
-                        try {
-                            const rawExif = await exifr.parse(photoPath)
-                            const exif = rawExif || {}
-                            return { name: photo, path: relPhotoPath, exif, slug: slugify(photo, { lower: true }) }
-                        } catch (error) {
-                            console.error(`Error parsing EXIF for ${photoPath}:`, error)
-                            return { name: photo, path: relPhotoPath, exif: {}, slug: slugify(photo, { lower: true }) }
-                        }
-                    })
-                )
-                // TODO expose to config
-                // sort by date
-                photos.sort((a, b) => {
-                    const dateA = a.exif.DateTimeOriginal ? new Date(a.exif.DateTimeOriginal).getTime() : 0
-                    const dateB = b.exif.DateTimeOriginal ? new Date(b.exif.DateTimeOriginal).getTime() : 0
-                    return dateA - dateB
-                })
-
-                const album: AlbumData = {
-                    name: albumName,
-                    photos,
-                    slug: slugify(albumName, { lower: true }),
-                    cover: photos[photos.length - 1].path
+        (await parsePhotos(albumsPath)).map((album: AlbumData) => {
+            createNode({
+                id: album.name,
+                ...album,
+                internal: {
+                    type: 'PhotoAlbum',
+                    contentDigest: createContentDigest(album)
                 }
-
-                createNode({
-                    id: albumName,
-                    ...album,
-                    internal: {
-                        type: 'PhotoAlbum',
-                        contentDigest: createContentDigest(album)
-                    }
-                })
             })
-        )
+        })
     } catch (error) {
         console.error('Error processing albums:', error)
     }
@@ -118,7 +141,7 @@ export const createPages = async ({ actions: { createSlice, createPage }, graphq
         id: "navbar",
         component: path.resolve(`./src/components/navbar.tsx`),
     })
-    const albums = await graphql(`
+    const albums: AlbumsQueryQuery = (await graphql(`
         query albumsQuery {
             allPhotoAlbum {
                 edges {
@@ -139,8 +162,8 @@ export const createPages = async ({ actions: { createSlice, createPage }, graphq
                     }
                 }
             }
-        }`)
-    albums.data.allPhotoAlbum.edges.forEach(({ node }) => {
+        }`)).data
+    albums.allPhotoAlbum.edges.forEach(({ node }) => {
         createPage({
             path: `/albums/${node.slug}`,
             component: path.resolve(`./src/templates/album.tsx`),

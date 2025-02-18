@@ -14,7 +14,7 @@ export default function NavBar() {
                 </div>
                 <div className="navbar-menu is-active">
                     <div className="navbar-start">
-                        <Link className="navbar-item" to="/albums">
+                        <Link className="navbar-item" to="/">
                             <span className="icon">
                                 <i className="fas fa-book"></i>
                             </span>

@@ -12,18 +12,17 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/keyboard';
+import type { AlbumsQueryQuery } from '../generated/graphql';
 
-const AlbumsPage: React.FC<PageProps> = ({ pageContext }) => {
+const AlbumsPage: React.FC<PageProps<object, { album: AlbumsQueryQuery["allPhotoAlbum"]["edges"][0]["node"] }>> = ({ pageContext }) => {
     const album = pageContext.album;
 
     const [state, setState] = React.useState({
         viewerIsOpen: typeof window !== 'undefined' && window.location.hash !== "",
     });
 
-    const [scrollPos, setScrollPos] = React.useState(0);
-
-    const openModal = (event) => {
-        navigate("/albums/" + album.slug + "#" + event.target.attributes.slug.value, { replace: true });
+    const openModal = (event: React.MouseEvent) => {
+        navigate("/albums/" + album.slug + "#" + (event.target as HTMLElement).dataset.slug, { replace: true });
         // if we don't wait a bit, the hash navigation won't work
         // it will read slug from last time
         setTimeout(() => {
@@ -46,7 +45,7 @@ const AlbumsPage: React.FC<PageProps> = ({ pageContext }) => {
         return () => {
             document.documentElement.style.overflow = '';
         };
-    }, [state.viewerIsOpen, scrollPos]);
+    }, [state.viewerIsOpen]);
 
     return (
         <Layout>
@@ -78,9 +77,9 @@ const AlbumsPage: React.FC<PageProps> = ({ pageContext }) => {
                         album.photos.map((image, _) => (
                             <div onClick={openModal}>
                                 <GatsbyImage
-                                    image={image.imageFile.childImageSharp.thumbnail}
-                                    alt={image.name}
-                                    slug={image.slug}
+                                    data-slug={image.slug}
+                                    image={image.imageFile!.childImageSharp!.thumbnail}
+                                    alt={image.path}
                                     loading="lazy"
                                     className="gallery-image"
                                 />
@@ -92,9 +91,7 @@ const AlbumsPage: React.FC<PageProps> = ({ pageContext }) => {
             <Modal
                 isOpen={state.viewerIsOpen}
                 onRequestClose={closeModal}
-                shouldFocusAfterRender={false}
                 shouldCloseOnEsc={true}
-                shouldReturnFocusAfterClose={true}
                 // https://github.com/reactjs/react-modal/issues/279
                 // sadly Modal will return to top of page after closing
 
@@ -120,7 +117,6 @@ const AlbumsPage: React.FC<PageProps> = ({ pageContext }) => {
                     navigation={{
                         enabled: true,
                     }}
-                    preloadImages={false}
                     keyboard={{ enabled: true, }}
                     pagination={{ clickable: true, }}
                     hashNavigation={{
@@ -132,11 +128,12 @@ const AlbumsPage: React.FC<PageProps> = ({ pageContext }) => {
                 >
                     {
                         album.photos.map((image, i) => (
-                            <SwiperSlide slug={image.slug} data-hash={image.slug}>
+                            <SwiperSlide data-hash={image.slug}>
                                 <GatsbyImage
+                                    objectFit="contain"
                                     className="gallery-image"
-                                    image={image.imageFile.childImageSharp.large}
-                                    alt={image.name}
+                                    image={image.imageFile!.childImageSharp!.large}
+                                    alt={image.path}
                                     loading="lazy"
                                 />
                             </SwiperSlide>
