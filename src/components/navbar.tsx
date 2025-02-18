@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Link } from 'gatsby';
 import "../styles/navbar.css";
+import { StaticImage } from 'gatsby-plugin-image';
 
 
 export default function NavBar() {
@@ -9,7 +10,7 @@ export default function NavBar() {
             <nav className="navbar has-shadow" role="navigation" aria-label="main navigation">
                 <div className="navbar-brand">
                     <div className="navbar-item">
-                        {/* <img src={logo} alt="logo" width="32" height="32" /> */}
+                        <StaticImage src="../images/icon.png" alt="icon" width={32} height={32} />
                     </div>
                 </div>
                 <div className="navbar-menu is-active">
