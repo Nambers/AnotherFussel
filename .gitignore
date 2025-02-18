@@ -5,3 +5,4 @@ src/gatsby-types.d.ts
 src/images/input
 package-lock.json
 src/generated
+config.tsx

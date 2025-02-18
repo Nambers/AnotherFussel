@@ -1,22 +1,28 @@
 import type { GatsbyConfig } from "gatsby";
 
 const config: GatsbyConfig = {
+  // https://www.gatsbyjs.com/docs/reference/config-files/gatsby-config/#sitemetadata
   siteMetadata: {
-    title: `another-fussel`,
-    siteUrl: `https://www.yourdomain.tld`
+    title: `Photos of Eritque arcus`,
+    siteUrl: `https://photos.ikuyo.dev`,
+    description: `A photo gallery`,
   },
   // More easily incorporate content into your pages through automatic TypeScript type generation and better GraphQL IntelliSense.
   // If you use VSCode you can also use the GraphQL plugin
   // Learn more at: https://gatsby.dev/graphql-typegen
-  graphqlTypegen: true,
-  plugins: ["gatsby-plugin-image", "gatsby-plugin-sharp", "gatsby-transformer-sharp", {
-    resolve: 'gatsby-source-filesystem',
-    options: {
-      "name": "images",
-      "path": `${__dirname}/src/images/`
-    },
-    __key: "images"
+  graphqlTypegen: {
+    generateOnBuild: false,
+    documentSearchPaths: [`./src/**/*.{ts,tsx}`, `./gatsby-node.ts`],
   },
+  plugins: ["gatsby-plugin-image", "gatsby-transformer-sharp",
+    {
+      resolve: 'gatsby-source-filesystem',
+      options: {
+        "name": "images",
+        "path": `${__dirname}/src/images/`
+      },
+      __key: "images"
+    },
     {
       resolve: "gatsby-plugin-sharp",
       options: {
@@ -24,7 +30,13 @@ const config: GatsbyConfig = {
           quality: 100,
         }
       }
-    }]
+    },
+    {
+      resolve: `gatsby-plugin-manifest`,
+      options: {
+        icon: `src/images/icon.png`,
+      },
+    },]
 };
 
 export default config;

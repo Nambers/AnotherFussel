@@ -19,5 +19,11 @@ src
 ```
 
 1. install deps `npm i`.
-2. `gatsby develop`.
-3. `gatsby build`, then files should be listed under `public`.
+2. copy `config-template.ts` to `config.ts`
+3. `gatsby develop`.
+4. `gatsby build`, then files should be listed under `public`.
+
+## How to config
+
+- Modify `./config.ts` and `./gatsby-config.ts`
+- If you want to change avatar, overwrite `src/images/icon.png` or change `StaticImage` in `src/components/header.tsx` and fav icon setting `./gatsby-config.ts` pointing to your file.

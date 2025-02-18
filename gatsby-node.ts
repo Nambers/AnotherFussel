@@ -1,28 +1,10 @@
 import { CreateSchemaCustomizationArgs, SourceNodesArgs } from "gatsby";
-import type { AlbumsQueryQuery } from "./src/generated/graphql";
-
-const fs = require('fs');
-const exifr = require('exifr');
-const path = require('path');
-const slugify = require('slugify');
-
-export type ExifData = {
-    [key: string]: string | number
-}
-
-export type PhotoData = {
-    name: string
-    exif: ExifData
-    slug: string
-    path: string
-}
-
-export type AlbumData = {
-    name: string
-    photos: PhotoData[]
-    slug: string
-    cover: string
-}
+import type { AlbumData, PhotoData } from "./types";
+import { albums_sort, photos_sort, photo_exts } from "./config";
+import fs from 'fs';
+import exifr from 'exifr';
+import path from 'path';
+import slugify from 'slugify';
 
 export const createSchemaCustomization = ({ actions: { createTypes } }: CreateSchemaCustomizationArgs): void => {
     const typeDefs = `
@@ -51,7 +33,7 @@ const parsePhotos = async (albumPath: string): Promise<AlbumData[]> => {
         const fullPath = `${albumPath}/${file}`;
         if (fs.statSync(fullPath).isDirectory()) {
             acc[1].push(file);
-        } else if (/\.(jpg|jpeg|png|gif|webp)$/i.test(file)) { // 顺便加了几个常用格式 (｡･ω･｡)
+        } else if (photo_exts.test(file)) {
             acc[0].push(file);
         }
         return acc;
@@ -85,11 +67,7 @@ const parsePhotos = async (albumPath: string): Promise<AlbumData[]> => {
 
     const photos = await Promise.all(photoFiles.map(processPhoto));
 
-    photos.sort((a, b) => {
-        const dateA = a.exif.DateTimeOriginal ? new Date(a.exif.DateTimeOriginal).getTime() : 0;
-        const dateB = b.exif.DateTimeOriginal ? new Date(b.exif.DateTimeOriginal).getTime() : 0;
-        return dateA - dateB;
-    });
+    photos.sort(photos_sort);
 
     const currentAlbum: AlbumData[] = photos.length ? [{
         name: path.relative(`${__dirname}/src/images/input`, albumPath),
@@ -113,7 +91,7 @@ export const sourceNodes = async ({
     const albumsPath = `${__dirname}/src/images/input`
 
     try {
-        (await parsePhotos(albumsPath)).map((album: AlbumData) => {
+        (await parsePhotos(albumsPath)).sort(albums_sort).map((album: AlbumData) => {
             createNode({
                 id: album.name,
                 ...album,
@@ -141,7 +119,7 @@ export const createPages = async ({ actions: { createSlice, createPage }, graphq
         id: "navbar",
         component: path.resolve(`./src/components/navbar.tsx`),
     })
-    const albums: AlbumsQueryQuery = (await graphql(`
+    const albums: Queries.albumsQueryQuery = (await graphql(`
         query albumsQuery {
             allPhotoAlbum {
                 edges {

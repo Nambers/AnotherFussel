@@ -12,9 +12,8 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/keyboard';
-import type { AlbumsQueryQuery } from '../generated/graphql';
 
-const AlbumsPage: React.FC<PageProps<object, { album: AlbumsQueryQuery["allPhotoAlbum"]["edges"][0]["node"] }>> = ({ pageContext }) => {
+const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["allPhotoAlbum"]["edges"][0]["node"] }>> = ({ pageContext }) => {
     const album = pageContext.album;
 
     const [state, setState] = React.useState({

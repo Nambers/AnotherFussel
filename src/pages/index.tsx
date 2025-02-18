@@ -1,15 +1,13 @@
 import * as React from "react"
 import { Layout } from "../components/layout"
 import { GatsbyImage, getImage } from "gatsby-plugin-image"
-import { PageProps, Link, HeadFC, graphql } from "gatsby"
+import { PageProps, Link, graphql } from "gatsby"
 
 import "../styles/index.css"
 
-import type { IndexPageQueryQuery } from "../generated/graphql"
+type AlbumsType = Queries.IndexPageQueryQuery["allPhotoAlbum"]["edges"]
 
-type AlbumsType = IndexPageQueryQuery["allPhotoAlbum"]["edges"]
-
-const IndexPage: React.FC<PageProps<IndexPageQueryQuery>> = ({ data }) => {
+const IndexPage: React.FC<PageProps<Queries.IndexPageQueryQuery>> = ({ data }) => {
   const albums = data.allPhotoAlbum.edges
 
   const generateCards = (albums: AlbumsType) => {
@@ -24,7 +22,7 @@ const IndexPage: React.FC<PageProps<IndexPageQueryQuery>> = ({ data }) => {
             <figure className="image is-4by3 subject-photo">
               <GatsbyImage
                 className="subject-photo"
-                image={getImage(subject.coverFile?.childImageSharp?.gatsbyImageData)!}
+                image={getImage(subject.coverFile!.childImageSharp!.gatsbyImageData!)!}
                 alt={subject.name} />
             </figure>
           </div>
@@ -63,8 +61,6 @@ const IndexPage: React.FC<PageProps<IndexPageQueryQuery>> = ({ data }) => {
 }
 
 export default IndexPage
-
-export const Head: HeadFC = () => <title>Albums</title>
 
 export const query = graphql`
   query IndexPageQuery {
