@@ -134,6 +134,7 @@ export const createPages = async ({ actions: { createSlice, createPage }, graphq
                             childImageSharp {
                                 thumbnail: gatsbyImageData(width:500, layout: CONSTRAINED, transformOptions: {fit: CONTAIN})
                                 large: gatsbyImageData(width:1600, layout: CONSTRAINED, transformOptions: {fit: CONTAIN})
+                                single: gatsbyImageData(layout: FULL_WIDTH, transformOptions: {fit: CONTAIN})
                             }
                         }
                     }
@@ -148,6 +149,19 @@ export const createPages = async ({ actions: { createSlice, createPage }, graphq
             context: {
                 album: node
             }
+        })
+    })
+    albums.allPhotoAlbum.edges.forEach(({ node }) => {
+        node.photos.forEach((photo) => {
+            createPage({
+                path: `/albums/${node.slug}/${photo.slug}`,
+                component: path.resolve(`./src/templates/photo.tsx`),
+                context: {
+                    album: node.name,
+                    album_slug: node.slug,
+                    photo
+                }
+            })
         })
     })
 }

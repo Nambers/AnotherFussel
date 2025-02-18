@@ -34,6 +34,10 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
         setState({ viewerIsOpen: false });
     };
 
+    const openInfoModal = () => {
+        navigate("/albums/" + album.slug + "/" + window.location.hash.substring(1));
+    };
+
     React.useEffect(() => {
         if (state.viewerIsOpen) {
             document.documentElement.style.overflow = 'hidden';
@@ -105,6 +109,16 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
                     }
                 }}
             >
+                <button id="infoModal" className="button is-text" onClick={openInfoModal} style={{
+                    position: 'absolute',
+                    right: 60,
+                    top: 15,
+                    zIndex: 100
+                }}>
+                    <span className="icon is-small">
+                        <i className="fas fa-info-circle"></i>
+                    </span>
+                </button>
                 <button className="button is-text modal-close-button" onClick={closeModal} >
                     <span className="icon is-small">
                         <i className="fas fa-times"></i>
