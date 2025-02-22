@@ -3,14 +3,14 @@
     justify-content: center;
 }
 
-#image{
+#image {
     width: fit-content;
     padding: 2em;
     background: white;
     margin: 0 auto;
 }
 
-#infoContainer{
+#infoContainer {
     width: 100%;
 }
 
@@ -24,7 +24,8 @@
 #camera-info {
     float: right;
     font-family: "Barlow", sans-serif;
-    font-size: clamp(1rem, 3vw, 2rem);;
+    font-size: clamp(1rem, 3vw, 2rem);
+    ;
     display: flex;
     align-items: center;
     gap: clamp(1rem, 2vw, 1.5rem);
@@ -60,4 +61,3 @@
 #lens {
     font-weight: normal;
 }
-

@@ -6,12 +6,30 @@ import { Container, Hero, Breadcrumb, Heading } from 'react-bulma-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBook } from '@fortawesome/free-solid-svg-icons'
 
+import { Controlled } from 'react-medium-image-zoom'
+import 'react-medium-image-zoom/dist/styles.css';
+
 import '../styles/photo.css';
 
 const PhotoPage: React.FC<PageProps<object, { album_slug: string, album: string, photo: Queries.albumsQueryQuery["allPhotoAlbum"]["edges"][0]["node"]["photos"][0] }>> = ({ pageContext }) => {
     const photo = pageContext.photo;
     const album = pageContext.album;
     const album_slug = pageContext.album_slug;
+
+    const [isZoomed, setIsZoomed] = React.useState(false);
+
+    React.useEffect(() => {
+        if (isZoomed) {
+            document.documentElement.style.overflow = 'hidden';
+
+        } else {
+            document.documentElement.style.overflow = '';
+        }
+        return () => {
+            document.documentElement.style.overflow = '';
+        };
+    }, [isZoomed]);
+
     return (
         <Layout>
             <Container>
@@ -32,11 +50,17 @@ const PhotoPage: React.FC<PageProps<object, { album_slug: string, album: string,
                     </Hero.Body>
                 </Hero>
                 <div id="imageContainer">
-                    <GatsbyImage
-                        id="image"
-                        image={photo.imageFile!.childImageSharp!.single!}
-                        alt={photo.path}
-                    />
+                    <Controlled isZoomed={isZoomed} onZoomChange={setIsZoomed}>
+                        <GatsbyImage
+                            id="image"
+                            style={{
+                                height: '100%',
+                                width: '100%'
+                            }}
+                            image={photo.imageFile!.childImageSharp!.single!}
+                            alt={photo.path}
+                        />
+                    </Controlled>
                     <div id="infoContainer">
                         <div id="camera-info">
                             {
