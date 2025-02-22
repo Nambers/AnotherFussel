@@ -5,10 +5,11 @@ import fs from 'fs';
 import exifr from 'exifr';
 import path from 'path';
 import slugify from 'slugify';
+import { exifr_options, exifr_filter } from './config';
 
 export const createSchemaCustomization = ({ actions: { createTypes } }: CreateSchemaCustomizationArgs): void => {
     const typeDefs = `
-        type PhotoAlbum implements Node {
+        type PhotoAlbum implements Node @dontInfer {
             name: String!
             photos: [PhotoData!]!
             slug: String!
@@ -47,7 +48,7 @@ const parsePhotos = async (albumPath: string): Promise<AlbumData[]> => {
         console.log(`Processing photo: ${relPhotoPath}`);
 
         try {
-            const exif = await exifr.parse(photoPath) || {};
+            const exif = await ((exifr.parse(photoPath, exifr_options) || {}).then(exifr_filter));
             return {
                 name: photo,
                 path: relPhotoPath,
@@ -82,6 +83,17 @@ const parsePhotos = async (albumPath: string): Promise<AlbumData[]> => {
 
     return currentAlbum.concat(...subAlbumResults);
 };
+
+exports.onCreateNode = ({ node, actions }) => {
+    const { createNodeField } = actions
+    if (node.internal.type === 'File') {
+        createNodeField({
+            node,
+            name: 'slug',
+            value: node.name,
+        })
+    }
+}
 
 
 export const sourceNodes = async ({

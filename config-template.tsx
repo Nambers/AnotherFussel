@@ -1,5 +1,6 @@
 import * as React from "react";
-import type { PhotoData, AlbumData } from "./types";
+import type { PhotoData, AlbumData, ExifData } from "./types";
+import { Link } from "gatsby";
 
 const get_date = (inp: any): number => {
     return inp ? new Date(inp).getTime() : 0;
@@ -14,6 +15,24 @@ export const photos_sort = ((a: PhotoData, b: PhotoData): number => {
 // Photo file filter extensions
 export const photo_exts = /\.(jpg|jpeg|png|webp|tif|tiff)$/i;
 
+// exifr options
+export const exifr_options = {
+    exif: true,
+    tiff: true,
+    ifd0: false,
+    xmp: true,
+    mergeOutput: true
+};
+
+const keys = new Set(["DateTimeOriginal", "Make", "Model", "LensModel", "FocalLength", "FNumber", "ExposureTime", "ISO", "Flash",
+    "Software", "Artist", "ImageDescription", "Copyright",
+    "City", "Country", "GPSLatitude", "GPSLongitude", "GPSAltitude", "State"]);
+
+// exifr filter
+export const exifr_filter = (exif: ExifData): ExifData => {
+    return Object.fromEntries(Object.entries(exif).filter(([key, _]) => keys.has(key))) as ExifData;
+}
+
 // Sort album
 // default sort by oldest date of photo inside, ascending order
 export const albums_sort = ((a: AlbumData, b: AlbumData): number => {
@@ -27,6 +46,6 @@ export const custom_header = (<script></script>);
 // custom_footer, you can place footer text here
 export const custom_footer = (
     <p>
-        All works made by <strong>ME</strong> and licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>
+        All works made by <Link to="/"><strong>ME</strong></Link> and licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>
     </p>
 );
