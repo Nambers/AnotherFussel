@@ -1,6 +1,5 @@
 import React from "react"
 import { Slice } from "gatsby"
-import 'bulma/css/bulma.min.css'
 
 export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
     return (

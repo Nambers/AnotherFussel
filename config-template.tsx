@@ -12,7 +12,7 @@ export const photos_sort = ((a: PhotoData, b: PhotoData): number => {
 });
 
 // Photo file filter extensions
-export const photo_exts = /\.(jpg|jpeg|png|gif|webp)$/i;
+export const photo_exts = /\.(jpg|jpeg|png|webp|tif|tiff)$/i;
 
 // Sort album
 // default sort by oldest date of photo inside, ascending order
