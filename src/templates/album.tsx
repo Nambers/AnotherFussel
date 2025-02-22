@@ -6,6 +6,9 @@ import { Navigation, Pagination, Keyboard, HashNavigation } from 'swiper/modules
 import { Swiper, SwiperSlide } from 'swiper/react';
 import Modal from 'react-modal';
 import Masonry, { ResponsiveMasonry } from "react-responsive-masonry"
+import { Container, Heading, Hero, Breadcrumb, Button, Icon } from 'react-bulma-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBook, faInfoCircle, faTimes } from '@fortawesome/free-solid-svg-icons'
 
 import '../styles/album.css';
 import 'swiper/css';
@@ -52,23 +55,21 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
 
     return (
         <Layout>
-            <div className="container" >
-                <section className="hero is-small">
-                    <div className="hero-body">
-                        <nav className="breadcrumb" aria-label="breadcrumbs">
-                            <ul>
-                                <li>
-                                    <i className="fas fa-book fa-lg"></i>
-                                    <Link className="title is-5" to={"/"}>&nbsp;&nbsp;Albums</Link>
-                                </li>
-                                <li className="is-active">
-                                    <a className="title is-5" style={{ color: "black" }}>{album.name}</a>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
-                </section>
-            </div>
+            <Container>
+                <Hero size="small">
+                    <Hero.Body>
+                        <Breadcrumb>
+                            <Breadcrumb.Item>
+                                <FontAwesomeIcon icon={faBook} size="lg" />
+                                <Link className="title is-5" to="/" style={{ marginLeft: "1em" }}>Albums</Link>
+                            </Breadcrumb.Item>
+                            <Breadcrumb.Item active>
+                                <Heading size={5} textColor="black" renderAs='a'>{album.name}</Heading>
+                            </Breadcrumb.Item>
+                        </Breadcrumb>
+                    </Hero.Body>
+                </Hero>
+            </Container>
             <ResponsiveMasonry
                 className="container"
                 columnsCountBreakPoints={{ 300: 1, 600: 2, 900: 3, 1200: 4, 1500: 5 }}
@@ -109,21 +110,21 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
                     }
                 }}
             >
-                <button id="infoModal" className="button is-text" onClick={openInfoModal} style={{
+                <Button text id="infoModal" onClick={openInfoModal} style={{
                     position: 'absolute',
                     right: 60,
                     top: 15,
                     zIndex: 100
                 }}>
-                    <span className="icon is-small">
-                        <i className="fas fa-info-circle"></i>
-                    </span>
-                </button>
-                <button className="button is-text modal-close-button" onClick={closeModal} >
-                    <span className="icon is-small">
-                        <i className="fas fa-times"></i>
-                    </span>
-                </button>
+                    <Icon size="small">
+                        <FontAwesomeIcon icon={faInfoCircle} />
+                    </Icon>
+                </Button>
+                <Button text className="modal-close-button" onClick={closeModal} >
+                    <Icon size="small">
+                        <FontAwesomeIcon icon={faTimes} />
+                    </Icon>
+                </Button>
 
                 <Swiper
                     slidesPerView={1}

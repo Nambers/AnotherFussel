@@ -2,8 +2,9 @@ import * as React from "react"
 import { Layout } from "../components/layout"
 import { GatsbyImage, getImage } from "gatsby-plugin-image"
 import { PageProps, Link, graphql } from "gatsby"
-
-import "../styles/index.css"
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBook } from '@fortawesome/free-solid-svg-icons'
+import { Container, Hero, Breadcrumb, Columns, Card, Heading } from "react-bulma-components"
 
 type AlbumsType = Queries.IndexPageQueryQuery["allPhotoAlbum"]["edges"]
 
@@ -11,51 +12,50 @@ const IndexPage: React.FC<PageProps<Queries.IndexPageQueryQuery>> = ({ data }) =
   const albums = data.allPhotoAlbum.edges
 
   const generateCards = (albums: AlbumsType) => {
-    return albums.map((album) => generateCard(album.node))
+    return albums.map((album: { node: AlbumsType[0]["node"]; }) => generateCard(album.node))
   }
 
   const generateCard = (subject: AlbumsType[0]["node"]) => {
     return (
-      <Link key={subject.slug} className="column is-one-quarter" to={"/albums/" + subject.slug}>
-        <div className="card">
-          <div className="card-image">
-            <figure className="image is-4by3 subject-photo">
+      <Columns.Column size="one-quarter" key={subject.slug} renderAs={Link} to={"/albums/" + subject.slug}>
+        <Card>
+          <Card.Content style={{ padding: 0, overflow: 'hidden' }}>
+            <figure className="image is-4by3">
               <GatsbyImage
-                className="subject-photo"
+                style={{
+                  height: '100%',
+                  width: '100%'
+                }}
                 image={getImage(subject.coverFile!.childImageSharp!.gatsbyImageData!)!}
                 alt={subject.name} />
             </figure>
-          </div>
-          <div className="card-content">
-            <div className="media-content">
-              <p className="title is-5">{subject.name}</p>
-              <p className="subtitle is-7">{subject.photos.length} Photo{subject.photos.length === 1 ? '' : 's'}</p>
-            </div>
-          </div>
-        </div>
-      </Link>
+          </Card.Content>
+          <Card.Content>
+            <Heading size={5}>{subject.name}</Heading>
+            <Heading subtitle size={6}>{subject.photos.length} Photo{subject.photos.length === 1 ? '' : 's'}</Heading>
+          </Card.Content>
+        </Card>
+      </Columns.Column>
     );
   }
 
   return (
     <Layout>
-      <div className="container">
-        <section className="hero is-small">
-          <div className="hero-body">
-            <nav className="breadcrumb" aria-label="breadcrumbs">
-              <ul>
-                <li className="is-active">
-                  <i className="fas fa-book fa-lg"></i>
-                  <a className="title is-5" style={{ color: "black" }}>&nbsp;&nbsp;Albums</a>
-                </li>
-              </ul>
-            </nav>
-          </div>
-        </section>
-        <div className="columns is-multiline">
+      <Container>
+        <Hero size="small">
+          <Hero.Body>
+            <Breadcrumb>
+              <Breadcrumb.Item active>
+                <FontAwesomeIcon icon={faBook} size="lg" />
+                <Heading size={5} textColor="black" style={{ marginLeft: "1em" }} renderAs="a">Albums</Heading>
+              </Breadcrumb.Item>
+            </Breadcrumb>
+          </Hero.Body>
+        </Hero>
+        <Columns multiline>
           {generateCards(albums)}
-        </div>
-      </div>
+        </Columns>
+      </Container>
     </Layout>
   )
 }

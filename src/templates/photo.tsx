@@ -1,7 +1,10 @@
 import * as React from 'react';
 import { Layout } from "../components/layout"
-import { navigate, PageProps, Link } from "gatsby"
+import { PageProps, Link } from "gatsby"
 import { GatsbyImage } from 'gatsby-plugin-image';
+import { Container, Hero, Breadcrumb, Heading } from 'react-bulma-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBook } from '@fortawesome/free-solid-svg-icons'
 
 const PhotoPage: React.FC<PageProps<object, { album_slug: string, album: string, photo: Queries.albumsQueryQuery["allPhotoAlbum"]["edges"][0]["node"]["photos"][0] }>> = ({ pageContext }) => {
     const photo = pageContext.photo;
@@ -9,32 +12,30 @@ const PhotoPage: React.FC<PageProps<object, { album_slug: string, album: string,
     const album_slug = pageContext.album_slug;
     return (
         <Layout>
-            <div className="container" >
-                <section className="hero is-small">
-                    <div className="hero-body">
-                        <nav className="breadcrumb" aria-label="breadcrumbs">
-                            <ul>
-                                <li>
-                                    <i className="fas fa-book fa-lg"></i>
-                                    <Link className="title is-5" to={"/"}>&nbsp;&nbsp;Albums</Link>
-                                </li>
-                                <li>
-                                    <Link className="title is-5" to={"/albums/" + album_slug}>{album}</Link>
-                                </li>
-                                <li className="is-active">
-                                    <a className="title is-5" style={{ color: "black" }}>{photo.slug}</a>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
-                </section>
+            <Container>
+                <Hero size="small">
+                    <Hero.Body>
+                        <Breadcrumb>
+                            <Breadcrumb.Item>
+                                <FontAwesomeIcon icon={faBook} size="lg" />
+                                <Heading size={5} style={{ marginLeft: "1em" }} renderAs={Link} to="/">Albums</Heading>
+                            </Breadcrumb.Item>
+                            <Breadcrumb.Item>
+                                <Heading size={5} renderAs={Link} to={"/albums/" + album_slug}>{album}</Heading>
+                            </Breadcrumb.Item>
+                            <Breadcrumb.Item active>
+                                <Heading size={5} textColor="black" renderAs='a'>{photo.slug}</Heading>
+                            </Breadcrumb.Item>
+                        </Breadcrumb>
+                    </Hero.Body>
+                </Hero>
                 <div id="imageContainer">
                     <GatsbyImage
                         image={photo.imageFile!.childImageSharp!.single!}
                         alt={photo.path}
                     />
                 </div>
-            </div>
+            </Container>
         </Layout>
     );
 };

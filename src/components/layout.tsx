@@ -1,11 +1,8 @@
 import React from "react"
 import { Slice } from "gatsby"
+import 'bulma/css/bulma.min.css'
 
-interface LayoutProps {
-    children?: React.ReactNode;
-}
-
-export const Layout: React.FC<LayoutProps> = ({ children }) => {
+export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
     return (
         <>
             <Slice alias="header" />
