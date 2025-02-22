@@ -135,6 +135,7 @@ export const createPages = async ({ actions: { createSlice, createPage }, graphq
                                 thumbnail: gatsbyImageData(width:500, layout: CONSTRAINED, transformOptions: {fit: CONTAIN})
                                 large: gatsbyImageData(width:1600, layout: CONSTRAINED, transformOptions: {fit: CONTAIN})
                                 single: gatsbyImageData(layout: FULL_WIDTH, transformOptions: {fit: CONTAIN})
+                                original: gatsbyImageData(layout: FIXED)
                             }
                         }
                     }

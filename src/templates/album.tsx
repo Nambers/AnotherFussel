@@ -95,7 +95,7 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
             <Modal
                 isOpen={state.viewerIsOpen}
                 onRequestClose={closeModal}
-                shouldCloseOnEsc={true}
+                shouldCloseOnEsc
                 // https://github.com/reactjs/react-modal/issues/279
                 // sadly Modal will return to top of page after closing
 
@@ -120,7 +120,12 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
                         <FontAwesomeIcon icon={faInfoCircle} />
                     </Icon>
                 </Button>
-                <Button text className="modal-close-button" onClick={closeModal} >
+                <Button text style={{
+                    position: "absolute",
+                    zIndex: 100,
+                    right: "15px",
+                    top: "15px",
+                }} onClick={closeModal} >
                     <Icon size="small">
                         <FontAwesomeIcon icon={faTimes} />
                     </Icon>
