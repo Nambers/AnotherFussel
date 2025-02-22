@@ -84,18 +84,6 @@ const parsePhotos = async (albumPath: string): Promise<AlbumData[]> => {
     return currentAlbum.concat(...subAlbumResults);
 };
 
-exports.onCreateNode = ({ node, actions }) => {
-    const { createNodeField } = actions
-    if (node.internal.type === 'File') {
-        createNodeField({
-            node,
-            name: 'slug',
-            value: node.name,
-        })
-    }
-}
-
-
 export const sourceNodes = async ({
     actions: { createNode },
     createContentDigest
