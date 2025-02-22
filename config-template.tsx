@@ -24,7 +24,7 @@ export const exifr_options = {
     mergeOutput: true
 };
 
-const keys = new Set(["DateTimeOriginal", "Make", "Model", "LensModel", "FocalLength", "FNumber", "ExposureTime", "ISO", "Flash",
+const keys = new Set(["DateTimeOriginal", "Make", "Model", "LensModel", "FocalLength", "FNumber", "ExposureTime", "ISO",
     "Software", "Artist", "ImageDescription", "Copyright",
     "City", "Country", "GPSLatitude", "GPSLongitude", "GPSAltitude", "State"]);
 

@@ -4,7 +4,7 @@ import "../styles/navbar.css";
 import { StaticImage } from 'gatsby-plugin-image';
 import { Navbar } from 'react-bulma-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBook } from '@fortawesome/free-solid-svg-icons'
+import { faBook, faMap } from '@fortawesome/free-solid-svg-icons'
 
 
 export default function navbarComp() {
@@ -21,6 +21,12 @@ export default function navbarComp() {
                         <FontAwesomeIcon icon={faBook} />
                         <span style={{ fontWeight: "bold" }}>
                             Albums
+                        </span>
+                    </Navbar.Item>
+                    <Navbar.Item renderAs={Link} to="/map">
+                        <FontAwesomeIcon icon={faMap} />
+                        <span style={{ fontWeight: "bold" }}>
+                            Map
                         </span>
                     </Navbar.Item>
                 </Navbar.Container>

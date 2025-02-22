@@ -195,11 +195,12 @@ const PhotoPage: React.FC<PageProps<object, { album_slug: string, album: string,
                             </div>
                         </div>
                         <div id="photo-properties">{
-                            Object.entries(photo.exif).map((item, i) => (
-                                <div>
-                                    <b>{item[0]}:</b> {item[1] as String}
-                                </div>
-                            ))
+                            Object.entries(photo.exif)
+                                .map((item, i) => (
+                                    <div>
+                                        <b>{item[0]}:</b> {item[1] as String}
+                                    </div>
+                                ))
                         }</div>
                     </div>
                 </div>
