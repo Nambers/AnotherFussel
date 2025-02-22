@@ -6,3 +6,4 @@ src/images/input
 package-lock.json
 src/generated
 config.tsx
+src/images/icon.png
