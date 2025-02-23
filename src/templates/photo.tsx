@@ -4,10 +4,17 @@ import { PageProps, Link } from "gatsby"
 import { GatsbyImage } from 'gatsby-plugin-image';
 import { Container, Hero, Breadcrumb, Heading, Button, Icon } from 'react-bulma-components';
 import Modal from 'react-modal';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBook, faTimes } from '@fortawesome/free-solid-svg-icons'
+import { FaBook } from 'react-icons/fa6';
+import { FaTimes } from 'react-icons/fa';
+import { SiSony, SiNikon } from 'react-icons/si';
+import type { IconType } from 'react-icons';
 
 import '../styles/photo.css';
+
+const BRANDS_ICONS: { [key: string]: IconType } = {
+    "sony": SiSony,
+    "nikon": SiNikon
+};
 
 // adapted from https://stackoverflow.com/a/20927899
 const Draggable: React.FC<{ initialPos?: { x: number, y: number }, children: React.ReactNode }> = ({ initialPos = { x: 0, y: 0 }, children }) => {
@@ -119,6 +126,18 @@ const PhotoPage: React.FC<PageProps<object, { album_slug: string, album: string,
         };
     }, [isZoomed]);
 
+    var brand_icon = <></>;
+    if ("Make" in photo.exif) {
+        const make = (photo.exif["Make"] as string).toLowerCase();
+        console.log(make);
+        if (make in BRANDS_ICONS) {
+            const BrandIcon = BRANDS_ICONS[make];
+            brand_icon = <BrandIcon size="5em" />;
+        } else {
+            brand_icon = <>{make}</>;
+        }
+    }
+
     return (
         <Layout>
             <Container>
@@ -126,7 +145,7 @@ const PhotoPage: React.FC<PageProps<object, { album_slug: string, album: string,
                     <Hero.Body>
                         <Breadcrumb>
                             <Breadcrumb.Item>
-                                <FontAwesomeIcon icon={faBook} size="lg" />
+                                <FaBook size="1.33em" />
                                 <Heading size={5} style={{ marginLeft: "1em" }} renderAs={Link} to="/">Albums</Heading>
                             </Breadcrumb.Item>
                             <Breadcrumb.Item>
@@ -158,8 +177,11 @@ const PhotoPage: React.FC<PageProps<object, { album_slug: string, album: string,
                             }
                         }}
                     >
-                        <Button text className="modal-close-button" onClick={() => setIsZoomed(false)} >
-                            <FontAwesomeIcon icon={faTimes} />
+                        <Button text className="modal-close-button" onClick={() => setIsZoomed(false)} style={{
+                            filter: "invert(1)",
+                            mixBlendMode: "difference"
+                        }} >
+                            <FaTimes />
                         </Button>
                         <Draggable>
                             <GatsbyImage
@@ -169,9 +191,8 @@ const PhotoPage: React.FC<PageProps<object, { album_slug: string, album: string,
                             />
                         </Draggable>
                     </Modal>
-                    <div onClick={() => setIsZoomed(true)}>
+                    <div onClick={() => setIsZoomed(true)} id="image">
                         <GatsbyImage
-                            id="image"
                             style={{
                                 width: '70vw',
                                 cursor: 'pointer'
@@ -183,7 +204,7 @@ const PhotoPage: React.FC<PageProps<object, { album_slug: string, album: string,
                     <div id="infoContainer">
                         <div id="camera-info">
                             {
-                                "Make" in photo.exif && <><div id="brand">{photo.exif["Make"] as String}</div><span id="separator">|</span></>
+                                "Make" in photo.exif && <>{brand_icon}<span id="separator"> | </span></>
                             }
                             <div id="specs">
                                 {

@@ -2,8 +2,7 @@ import * as React from "react"
 import { Layout } from "../components/layout"
 import { GatsbyImage, getImage } from "gatsby-plugin-image"
 import { PageProps, Link, graphql } from "gatsby"
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBook } from '@fortawesome/free-solid-svg-icons'
+import { FaBook } from "react-icons/fa6";
 import { Container, Hero, Breadcrumb, Columns, Card, Heading } from "react-bulma-components"
 
 type AlbumsType = Queries.IndexPageQueryQuery["allPhotoAlbum"]["edges"]
@@ -47,7 +46,7 @@ const IndexPage: React.FC<PageProps<Queries.IndexPageQueryQuery>> = ({ data }) =
           <Hero.Body>
             <Breadcrumb>
               <Breadcrumb.Item active>
-                <FontAwesomeIcon icon={faBook} size="lg" />
+                <FaBook size="1.33em" />
                 <Heading size={5} textColor="black" style={{ marginLeft: "1em" }} renderAs="a">Albums</Heading>
               </Breadcrumb.Item>
             </Breadcrumb>

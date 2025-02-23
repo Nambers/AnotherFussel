@@ -12,6 +12,11 @@ Keep an eye on the ticket and maybe one day I can remove this */
     top: 15px;
 }
 
+.inverted-icon {
+    filter: invert(1);
+    mix-blend-mode: difference;
+}
+
 /*
 Sadly need several !important to override the default gatsby styles
 */

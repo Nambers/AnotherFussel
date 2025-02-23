@@ -7,8 +7,8 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import Modal from 'react-modal';
 import Masonry, { ResponsiveMasonry } from "react-responsive-masonry"
 import { Container, Heading, Hero, Breadcrumb, Button, Icon } from 'react-bulma-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPhotoFilm, faInfoCircle, faTimes } from '@fortawesome/free-solid-svg-icons'
+import { FaPhotoFilm, FaCircleInfo, FaP, FaC } from 'react-icons/fa6';
+import { FaTimes } from 'react-icons/fa';
 
 import '../styles/album.css';
 import 'swiper/css';
@@ -65,7 +65,7 @@ const AlbumsPage: React.FC<PageProps<Queries.IndexFlattenPageQueryQuery>> = ({ d
                     <Hero.Body>
                         <Breadcrumb>
                             <Breadcrumb.Item active>
-                                <FontAwesomeIcon icon={faPhotoFilm} size="lg" />
+                                <FaPhotoFilm size="1.33em" />
                                 <Heading size={5} textColor="black" style={{ marginLeft: "1em" }} renderAs="a">Photos</Heading>
                             </Breadcrumb.Item>
                         </Breadcrumb>
@@ -120,9 +120,7 @@ const AlbumsPage: React.FC<PageProps<Queries.IndexFlattenPageQueryQuery>> = ({ d
                     top: 15,
                     zIndex: 100
                 }}>
-                    <Icon size="small">
-                        <FontAwesomeIcon icon={faInfoCircle} />
-                    </Icon>
+                    <FaCircleInfo size="0.875em" />
                 </Button>
                 <Button text style={{
                     position: "absolute",
@@ -130,9 +128,7 @@ const AlbumsPage: React.FC<PageProps<Queries.IndexFlattenPageQueryQuery>> = ({ d
                     right: "15px",
                     top: "15px",
                 }} onClick={closeModal} >
-                    <Icon size="small">
-                        <FontAwesomeIcon icon={faTimes} />
-                    </Icon>
+                    <FaTimes size="0.875em" />
                 </Button>
 
                 <Swiper

@@ -3,8 +3,7 @@ import { Link } from 'gatsby';
 import "../styles/navbar.css";
 import { StaticImage } from 'gatsby-plugin-image';
 import { Navbar } from 'react-bulma-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faB, faBook, faMap, faPhotoFilm } from '@fortawesome/free-solid-svg-icons';
+import { FaBook, FaMap, FaPhotoFilm } from 'react-icons/fa6';
 import { flatten_index } from '../../config';
 
 
@@ -19,13 +18,13 @@ export default function navbarComp() {
             <Navbar.Menu>
                 <Navbar.Container>
                     <Navbar.Item renderAs={Link} to="/">
-                        <FontAwesomeIcon icon={flatten_index ? faPhotoFilm : faBook} />
+                        {flatten_index ? <FaPhotoFilm /> : <FaBook />}
                         <span style={{ fontWeight: "bold" }}>
                             {flatten_index ? "Photos" : "Albums"}
                         </span>
                     </Navbar.Item>
                     <Navbar.Item renderAs={Link} to="/map">
-                        <FontAwesomeIcon icon={faMap} />
+                        <FaMap />
                         <span style={{ fontWeight: "bold" }}>
                             Map
                         </span>

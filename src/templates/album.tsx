@@ -6,9 +6,9 @@ import { Navigation, Pagination, Keyboard, HashNavigation } from 'swiper/modules
 import { Swiper, SwiperSlide } from 'swiper/react';
 import Modal from 'react-modal';
 import Masonry, { ResponsiveMasonry } from "react-responsive-masonry"
-import { Container, Heading, Hero, Breadcrumb, Button, Icon } from 'react-bulma-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBook, faInfoCircle, faTimes } from '@fortawesome/free-solid-svg-icons'
+import { Container, Heading, Hero, Breadcrumb, Button } from 'react-bulma-components';
+import { FaBook, FaCircleInfo } from 'react-icons/fa6';
+import { FaTimes } from 'react-icons/fa';
 
 import '../styles/album.css';
 import 'swiper/css';
@@ -60,7 +60,7 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
                     <Hero.Body>
                         <Breadcrumb>
                             <Breadcrumb.Item>
-                                <FontAwesomeIcon icon={faBook} size="lg" />
+                                <FaBook size="1.33em" />
                                 <Link className="title is-5" to="/" style={{ marginLeft: "1em" }}>Albums</Link>
                             </Breadcrumb.Item>
                             <Breadcrumb.Item active>
@@ -110,25 +110,28 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
                     }
                 }}
             >
-                <Button text id="infoModal" onClick={openInfoModal} style={{
-                    position: 'absolute',
-                    right: 60,
-                    top: 15,
-                    zIndex: 100
-                }}>
-                    <Icon size="small">
-                        <FontAwesomeIcon icon={faInfoCircle} />
-                    </Icon>
+                <Button text
+                    id="infoModal"
+                    className="inverted-icon"
+                    onClick={openInfoModal}
+                    style={{
+                        position: 'absolute',
+                        right: 60,
+                        top: 15,
+                        zIndex: 100
+                    }}>
+                    <FaCircleInfo size="0.875em" />
                 </Button>
-                <Button text style={{
-                    position: "absolute",
-                    zIndex: 100,
-                    right: "15px",
-                    top: "15px",
-                }} onClick={closeModal} >
-                    <Icon size="small">
-                        <FontAwesomeIcon icon={faTimes} />
-                    </Icon>
+                <Button text
+                    className="inverted-icon"
+                    style={{
+                        position: "absolute",
+                        zIndex: 100,
+                        right: "15px",
+                        top: "15px",
+                    }}
+                    onClick={closeModal} >
+                    <FaTimes size="0.875em" />
                 </Button>
 
                 <Swiper

@@ -1,6 +1,7 @@
 import * as React from "react";
 import type { PhotoData, AlbumData, ExifData } from "./types";
 import { Link } from "gatsby";
+import { FaCreativeCommons, FaCreativeCommonsBy, FaCreativeCommonsSa } from "react-icons/fa6";
 
 const get_date = (inp: any): number => {
     return inp ? new Date(inp).getTime() : 0;
@@ -46,11 +47,19 @@ export const custom_header = (<script></script>);
 // custom_footer, you can place footer text here
 export const custom_footer = (
     <p>
-        All works made by <Link to="/"><strong>ME</strong></Link> and licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>
+        All works made by&nbsp;
+        <Link to="/"><strong>ME</strong></Link>
+        &nbsp;and licensed under&nbsp;
+        <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>
+        &nbsp;
+        <FaCreativeCommons />&nbsp;
+        <FaCreativeCommonsBy />&nbsp;
+        <FaCreativeCommonsSa />
     </p>
 );
 
 // Flatten album in index page to show all photos
 export const flatten_index = false;
 
+// Separator before sub-album name in display name
 export const sub_album_sep = " > ";
