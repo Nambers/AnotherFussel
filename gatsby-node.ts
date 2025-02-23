@@ -119,16 +119,6 @@ export const createPages = async ({ actions: { createSlice, createPage }, graphq
         id: "navbar",
         component: path.resolve(`./src/components/navbar.tsx`),
     })
-    if (flatten_index)
-        createPage({
-            path: `/`,
-            component: path.resolve(`./src/templates/index-flatten.tsx`),
-        })
-    else
-        createPage({
-            path: `/`,
-            component: path.resolve(`./src/templates/index.tsx`),
-        })
     const albums: Queries.albumsQueryQuery = (await graphql(`
         query albumsQuery {
             allPhotoAlbum {
@@ -153,15 +143,26 @@ export const createPages = async ({ actions: { createSlice, createPage }, graphq
                 }
             }
         }`)).data
-    albums.allPhotoAlbum.edges.forEach(({ node }) => {
+    if (flatten_index)
         createPage({
-            path: `/albums/${node.slug}`,
-            component: path.resolve(`./src/templates/album.tsx`),
-            context: {
-                album: node
-            }
+            path: `/`,
+            component: path.resolve(`./src/templates/index-flatten.tsx`),
         })
-    })
+    else {
+        createPage({
+            path: `/`,
+            component: path.resolve(`./src/templates/index.tsx`),
+        })
+        albums.allPhotoAlbum.edges.forEach(({ node }) => {
+            createPage({
+                path: `/albums/${node.slug}`,
+                component: path.resolve(`./src/templates/album.tsx`),
+                context: {
+                    album: node
+                }
+            })
+        })
+    }
     albums.allPhotoAlbum.edges.forEach(({ node }) => {
         node.photos.forEach((photo) => {
             createPage({
