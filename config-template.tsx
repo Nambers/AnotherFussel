@@ -49,3 +49,6 @@ export const custom_footer = (
         All works made by <Link to="/"><strong>ME</strong></Link> and licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>
     </p>
 );
+
+// Flatten album in index page to show all photos
+export const flatten_index = false;

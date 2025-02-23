@@ -1,6 +1,6 @@
 import { CreateSchemaCustomizationArgs, SourceNodesArgs } from "gatsby";
 import type { AlbumData, PhotoData } from "./types";
-import { albums_sort, photos_sort, photo_exts } from "./config";
+import { albums_sort, photos_sort, photo_exts, flatten_index } from "./config";
 import fs from 'fs';
 import exifr from 'exifr';
 import path from 'path';
@@ -119,6 +119,16 @@ export const createPages = async ({ actions: { createSlice, createPage }, graphq
         id: "navbar",
         component: path.resolve(`./src/components/navbar.tsx`),
     })
+    if (flatten_index)
+        createPage({
+            path: `/`,
+            component: path.resolve(`./src/templates/index-flatten.tsx`),
+        })
+    else
+        createPage({
+            path: `/`,
+            component: path.resolve(`./src/templates/index.tsx`),
+        })
     const albums: Queries.albumsQueryQuery = (await graphql(`
         query albumsQuery {
             allPhotoAlbum {

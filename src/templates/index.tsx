@@ -27,7 +27,8 @@ const IndexPage: React.FC<PageProps<Queries.IndexPageQueryQuery>> = ({ data }) =
                   width: '100%'
                 }}
                 image={getImage(subject.coverFile!.childImageSharp!.gatsbyImageData!)!}
-                alt={subject.name} />
+                alt={subject.name}
+                loading="lazy" />
             </figure>
           </Card.Content>
           <Card.Content>
