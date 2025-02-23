@@ -194,7 +194,7 @@ const PhotoPage: React.FC<PageProps<object, { album_slug: string, album: string,
                         <GatsbyImage
                             style={{
                                 width: '70vw',
-                                cursor: 'pointer'
+                                cursor: 'zoom-in'
                             }}
                             image={photo.imageFile!.childImageSharp!.single!}
                             alt={photo.path}
@@ -217,9 +217,7 @@ const PhotoPage: React.FC<PageProps<object, { album_slug: string, album: string,
                         <div id="photo-properties">{
                             Object.entries(photo.exif)
                                 .map((item, i) => (
-                                    <div>
-                                        <b>{item[0]}:</b> {item[1] as String}
-                                    </div>
+                                    <><b>{item[0]}:</b> {item[1] as String}</>
                                 ))
                         }</div>
                     </div>
