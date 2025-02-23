@@ -129,7 +129,6 @@ const PhotoPage: React.FC<PageProps<object, { album_slug: string, album: string,
     var brand_icon = <></>;
     if ("Make" in photo.exif) {
         const make = (photo.exif["Make"] as string).toLowerCase();
-        console.log(make);
         if (make in BRANDS_ICONS) {
             const BrandIcon = BRANDS_ICONS[make];
             brand_icon = <BrandIcon size="5em" />;
