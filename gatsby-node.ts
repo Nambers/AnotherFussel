@@ -5,7 +5,7 @@ import fs from 'fs';
 import exifr from 'exifr';
 import path from 'path';
 import slugify from 'slugify';
-import { exifr_options, exifr_filter } from './config';
+import { exifr_options, exifr_filter, sub_album_sep } from './config';
 
 export const createSchemaCustomization = ({ actions: { createTypes } }: CreateSchemaCustomizationArgs): void => {
     const typeDefs = `
@@ -27,7 +27,7 @@ export const createSchemaCustomization = ({ actions: { createTypes } }: CreateSc
     createTypes(typeDefs)
 }
 
-const parsePhotos = async (albumPath: string): Promise<AlbumData[]> => {
+const parsePhotos = async (albumPath: string, displayName: string | null): Promise<AlbumData[]> => {
     const files = fs.readdirSync(albumPath);
 
     const [photoFiles, subAlbums] = files.reduce((acc: [string[], string[]], file: string) => {
@@ -71,14 +71,14 @@ const parsePhotos = async (albumPath: string): Promise<AlbumData[]> => {
     photos.sort(photos_sort);
 
     const currentAlbum: AlbumData[] = photos.length ? [{
-        name: path.relative(`${__dirname}/src/images/input`, albumPath),
+        name: displayName!,
         photos,
         slug: slugify(path.basename(albumPath), { lower: true }),
         cover: photos[0].path
     }] : [];
 
     const subAlbumResults = await Promise.all(
-        subAlbums.map((subAlbum: string) => parsePhotos(`${albumPath}/${subAlbum}`))
+        subAlbums.map((subAlbum: string) => parsePhotos(`${albumPath}/${subAlbum}`, displayName ? `${displayName}${sub_album_sep}${subAlbum}` : subAlbum))
     );
 
     return currentAlbum.concat(...subAlbumResults);
@@ -91,7 +91,7 @@ export const sourceNodes = async ({
     const albumsPath = `${__dirname}/src/images/input`
 
     try {
-        (await parsePhotos(albumsPath)).sort(albums_sort).map((album: AlbumData) => {
+        (await parsePhotos(albumsPath, null)).sort(albums_sort).map((album: AlbumData) => {
             createNode({
                 id: album.name,
                 ...album,

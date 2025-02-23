@@ -52,3 +52,5 @@ export const custom_footer = (
 
 // Flatten album in index page to show all photos
 export const flatten_index = false;
+
+export const sub_album_sep = " > ";
