@@ -9,27 +9,25 @@ import { flatten_index } from '../../config';
 
 export default function navbarComp() {
     return (
-        <Navbar className="has-shadow">
+        <Navbar className="has-shadow" style={{ display: "flex", justifyContent: "center" }}>
             <Navbar.Brand>
                 <Navbar.Item renderAs='div'>
                     <StaticImage src="../images/icon.png" alt="icon" width={32} height={32} />
                 </Navbar.Item>
             </Navbar.Brand>
-            <Navbar.Menu>
-                <Navbar.Container>
-                    <Navbar.Item renderAs={Link} to="/">
-                        {flatten_index ? <FaPhotoFilm /> : <FaBook />}
-                        <span style={{ fontWeight: "bold" }}>
-                            {flatten_index ? "Photos" : "Albums"}
-                        </span>
-                    </Navbar.Item>
-                    <Navbar.Item renderAs={Link} to="/map">
-                        <FaMap />
-                        <span style={{ fontWeight: "bold" }}>
-                            Map
-                        </span>
-                    </Navbar.Item>
-                </Navbar.Container>
+            <Navbar.Menu className="is-active" style={{ display: "flex" }} shadowless>
+                <Navbar.Item renderAs={Link} to="/">
+                    {flatten_index ? <FaPhotoFilm /> : <FaBook />}
+                    <span style={{ fontWeight: "bold" }}>
+                        {flatten_index ? "Photos" : "Albums"}
+                    </span>
+                </Navbar.Item>
+                <Navbar.Item renderAs={Link} to="/map">
+                    <FaMap />
+                    <span style={{ fontWeight: "bold" }}>
+                        Map
+                    </span>
+                </Navbar.Item>
             </Navbar.Menu>
         </Navbar>
     )
