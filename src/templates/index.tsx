@@ -41,7 +41,7 @@ const IndexPage: React.FC<PageProps<Queries.IndexPageQueryQuery>> = ({ data }) =
 
   return (
     <Layout>
-      <Container>
+      <Container style={{ maxWidth: "95vw" }}>
         <Hero size="small">
           <Hero.Body>
             <Breadcrumb>
