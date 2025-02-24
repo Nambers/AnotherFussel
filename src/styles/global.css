@@ -1,0 +1,3 @@
+.container:not(.is-widescreen):not(.is-fullhd):not(.is-max-tablet):not(.is-max-desktop):not(.is-max-widescreen) {
+    max-width: 95vw;
+}

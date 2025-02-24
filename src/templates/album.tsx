@@ -9,8 +9,10 @@ import Masonry, { ResponsiveMasonry } from "react-responsive-masonry"
 import { Container, Heading, Hero, Breadcrumb, Button } from 'react-bulma-components';
 import { FaBook, FaCircleInfo } from 'react-icons/fa6';
 import { FaTimes } from 'react-icons/fa';
+import { enable_photo_info_page, swiper_hash_listener } from "../../config";
 
 import '../styles/album.css';
+import '../styles/icon.css';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -40,6 +42,11 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
     const openInfoModal = () => {
         navigate("/albums/" + album.slug + "/" + window.location.hash.substring(1));
     };
+
+    React.useEffect(() => {
+        window.addEventListener('hashchange', swiper_hash_listener);
+        return () => window.removeEventListener('hashchange', swiper_hash_listener);
+    }, []);
 
     React.useEffect(() => {
         if (state.viewerIsOpen) {
@@ -110,20 +117,21 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
                     }
                 }}
             >
+                {
+                    enable_photo_info_page &&
+                    <Button text
+                        id="infoModal"
+                        onClick={openInfoModal}
+                        style={{
+                            position: 'absolute',
+                            right: 60,
+                            top: 15,
+                            zIndex: 100
+                        }}>
+                        <FaCircleInfo size="0.875em" className="inverted-icon" />
+                    </Button>
+                }
                 <Button text
-                    id="infoModal"
-                    className="inverted-icon"
-                    onClick={openInfoModal}
-                    style={{
-                        position: 'absolute',
-                        right: 60,
-                        top: 15,
-                        zIndex: 100
-                    }}>
-                    <FaCircleInfo size="0.875em" />
-                </Button>
-                <Button text
-                    className="inverted-icon"
                     style={{
                         position: "absolute",
                         zIndex: 100,
@@ -131,7 +139,7 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
                         top: "15px",
                     }}
                     onClick={closeModal} >
-                    <FaTimes size="0.875em" />
+                    <FaTimes size="0.875em" className="inverted-icon" />
                 </Button>
 
                 <Swiper

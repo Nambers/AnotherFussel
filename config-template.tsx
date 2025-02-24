@@ -63,3 +63,12 @@ export const flatten_index = false;
 
 // Separator before sub-album name in display name
 export const sub_album_sep = " > ";
+
+// you can add something for analytics here
+// e.g. for umami
+// const umami: { trackView: any } | undefined = (window as any).umami
+// umami?.trackView(window.location.pathname + window.location.hash);
+export const swiper_hash_listener = () => { };
+
+// Enable photo info page
+export const enable_photo_info_page = true;

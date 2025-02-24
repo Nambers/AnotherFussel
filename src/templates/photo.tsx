@@ -10,6 +10,7 @@ import { SiSony, SiNikon } from 'react-icons/si';
 import type { IconType } from 'react-icons';
 
 import '../styles/photo.css';
+import '../styles/icon.css';
 
 const BRANDS_ICONS: { [key: string]: IconType } = {
     "sony": SiSony,
@@ -180,7 +181,7 @@ const PhotoPage: React.FC<PageProps<object, { album_slug: string, album: string,
                             filter: "invert(1)",
                             mixBlendMode: "difference"
                         }} >
-                            <FaTimes />
+                            <FaTimes className="inverted-icon" />
                         </Button>
                         <Draggable>
                             <GatsbyImage
