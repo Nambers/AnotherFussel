@@ -10,7 +10,6 @@ import {
 
 import "../styles/map.css"
 
-
 const MapPage: React.FC<PageProps> = () => {
     return (
         <Layout>
@@ -64,4 +63,4 @@ const MapPage: React.FC<PageProps> = () => {
     )
 }
 
-export default MapPage
+export default MapPage;

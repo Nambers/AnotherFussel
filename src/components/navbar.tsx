@@ -4,7 +4,7 @@ import "../styles/navbar.css";
 import { StaticImage } from 'gatsby-plugin-image';
 import { Navbar } from 'react-bulma-components';
 import { FaBook, FaMap, FaPhotoFilm } from 'react-icons/fa6';
-import { flatten_index } from '../../config';
+import { flatten_index, enable_map_page } from '../../config';
 
 
 export default function navbarComp() {
@@ -22,12 +22,14 @@ export default function navbarComp() {
                         {flatten_index ? "Photos" : "Albums"}
                     </span>
                 </Navbar.Item>
-                <Navbar.Item renderAs={Link} to="/map">
-                    <FaMap />
-                    <span style={{ fontWeight: "bold" }}>
-                        Map
-                    </span>
-                </Navbar.Item>
+                {enable_map_page &&
+                    <Navbar.Item renderAs={Link} to="/map">
+                        <FaMap />
+                        <span style={{ fontWeight: "bold" }}>
+                            Map
+                        </span>
+                    </Navbar.Item>
+                }
             </Navbar.Menu>
         </Navbar>
     )

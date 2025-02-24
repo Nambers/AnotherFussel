@@ -3,6 +3,8 @@ import type { PhotoData, AlbumData, ExifData } from "./types";
 import { Link } from "gatsby";
 import { FaCreativeCommons, FaCreativeCommonsBy, FaCreativeCommonsSa } from "react-icons/fa6";
 
+//#region photo settings
+
 const get_date = (inp: any): number => {
     return inp ? new Date(inp).getTime() : 0;
 }
@@ -41,6 +43,13 @@ export const albums_sort = ((a: AlbumData, b: AlbumData): number => {
         - b.photos.reduce((max, item) => Math.max(max, get_date(item.exif.DateTimeOriginal)), 0);
 });
 
+// Separator before sub-album name in display name
+export const sub_album_sep = " > ";
+
+//#endregion photo settings
+
+//#region layout settings
+
 // custom_header, you can place tracking script here
 export const custom_header = (<script></script>);
 
@@ -58,11 +67,12 @@ export const custom_footer = (
     </p>
 );
 
+//#endregion layout settings
+
+//#region website settings
+
 // Flatten album in index page to show all photos
 export const flatten_index = false;
-
-// Separator before sub-album name in display name
-export const sub_album_sep = " > ";
 
 // you can add something for analytics here
 // e.g. for umami
@@ -70,5 +80,7 @@ export const sub_album_sep = " > ";
 // umami?.trackView(window.location.pathname + window.location.hash);
 export const swiper_hash_listener = () => { };
 
-// Enable photo info page
 export const enable_photo_info_page = true;
+export const enable_map_page = true;
+
+//#endregion website settings

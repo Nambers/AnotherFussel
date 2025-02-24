@@ -1,6 +1,6 @@
 import { CreateSchemaCustomizationArgs, SourceNodesArgs } from "gatsby";
 import type { AlbumData, PhotoData } from "./types";
-import { albums_sort, photos_sort, photo_exts, flatten_index, enable_photo_info_page } from "./config";
+import { albums_sort, photos_sort, photo_exts, flatten_index, enable_photo_info_page, enable_map_page } from "./config";
 import fs from 'fs';
 import exifr from 'exifr';
 import path from 'path';
@@ -177,4 +177,9 @@ export const createPages = async ({ actions: { createSlice, createPage }, graphq
                 })
             })
         })
+    if (enable_map_page)
+        createPage({
+            path: `/map`,
+            component: path.resolve(`./src/templates/map.tsx`),
+        });
 }
