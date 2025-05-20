@@ -7,9 +7,10 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import Modal from 'react-modal';
 import Masonry, { ResponsiveMasonry } from "react-responsive-masonry"
 import { Container, Heading, Hero, Breadcrumb, Button } from 'react-bulma-components';
-import { FaBook, FaCircleInfo } from 'react-icons/fa6';
+import { FaBook, FaCircleInfo, FaDownload } from 'react-icons/fa6';
 import { FaTimes } from 'react-icons/fa';
 import { enable_photo_info_page, swiper_hash_listener } from "../../config";
+import { saveAs } from "file-saver";
 
 import '../styles/album.css';
 import '../styles/icon.css';
@@ -21,9 +22,12 @@ import 'swiper/css/keyboard';
 const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["allPhotoAlbum"]["edges"][0]["node"] }>> = ({ pageContext }) => {
     const album = pageContext.album;
 
+    const initialHash = typeof window !== 'undefined' ? window.location.hash.substring(1) : "";
     const [state, setState] = React.useState({
         viewerIsOpen: typeof window !== 'undefined' && window.location.hash !== "",
     });
+    const initialIndex = album.photos.findIndex(photo => photo.slug === initialHash);
+    const [currentIndex, setCurrentIndex] = React.useState(initialIndex >= 0 ? initialIndex : 0);
 
     const openModal = (event: React.MouseEvent) => {
         navigate("/albums/" + album.slug + "#" + (event.target as HTMLElement).dataset.slug, { replace: true });
@@ -37,10 +41,6 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
     const closeModal = () => {
         navigate("/albums/" + album.slug, { replace: true });
         setState({ viewerIsOpen: false });
-    };
-
-    const openInfoModal = () => {
-        navigate("/albums/" + album.slug + "/" + window.location.hash.substring(1));
     };
 
     React.useEffect(() => {
@@ -117,30 +117,49 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
                     }
                 }}
             >
-                {
-                    enable_photo_info_page &&
-                    <Button text
-                        id="infoModal"
-                        onClick={openInfoModal}
-                        style={{
-                            position: 'absolute',
-                            right: 60,
-                            top: 15,
-                            zIndex: 100
-                        }}>
-                        <FaCircleInfo size="0.875em" className="inverted-icon" />
-                    </Button>
-                }
-                <Button text
+                <div
                     style={{
-                        position: "absolute",
+                        position: 'absolute',
+                        top: '15px',
+                        right: '15px',
                         zIndex: 100,
-                        right: "15px",
-                        top: "15px",
+                        display: 'flex',
+                        gap: '12px',
+                        alignItems: 'center'
                     }}
-                    onClick={closeModal} >
-                    <FaTimes size="0.875em" className="inverted-icon" />
-                </Button>
+                >
+                    <Button
+                        text
+                        onClick={() =>
+                            saveAs(
+                                album.photos[currentIndex].imageFile!.childImageSharp!.original.images.fallback!.src,
+                                album.photos[currentIndex].slug
+                            )
+                        }
+                    >
+                        <FaDownload size="0.875em" className="inverted-icon" />
+                    </Button>
+
+                    {enable_photo_info_page && (
+                        <Button
+                            text
+                            id="infoModal"
+                            onClick={() =>
+                                navigate("/albums/" + album.slug + "/" + album.photos[currentIndex].slug, { replace: true })
+                            }
+                        >
+                            <FaCircleInfo size="0.875em" className="inverted-icon" />
+                        </Button>
+                    )}
+
+                    <Button
+                        text
+                        onClick={closeModal}
+                    >
+                        <FaTimes size="0.875em" className="inverted-icon" />
+                    </Button>
+                </div>
+
 
                 <Swiper
                     slidesPerView={1}
@@ -152,6 +171,9 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
                     hashNavigation={{
                         watchState: true,
                         replaceState: true,
+                    }}
+                    onSlideChange={(swiper) => {
+                        setCurrentIndex(swiper.activeIndex);
                     }}
                     modules={[Navigation, Keyboard, HashNavigation, Pagination]}
                     className="swiper"

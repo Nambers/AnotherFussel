@@ -4,10 +4,11 @@ import { PageProps, Link } from "gatsby"
 import { GatsbyImage } from 'gatsby-plugin-image';
 import { Container, Hero, Breadcrumb, Heading, Button, Icon } from 'react-bulma-components';
 import Modal from 'react-modal';
-import { FaBook } from 'react-icons/fa6';
+import { FaBook, FaDownload } from 'react-icons/fa6';
 import { FaTimes } from 'react-icons/fa';
 import { SiSony, SiNikon } from 'react-icons/si';
 import type { IconType } from 'react-icons';
+import { saveAs } from "file-saver";
 
 import '../styles/photo.css';
 import '../styles/icon.css';
@@ -142,8 +143,8 @@ const PhotoPage: React.FC<PageProps<object, { album_slug: string, album: string,
         <Layout>
             <Container>
                 <Hero size="small">
-                    <Hero.Body>
-                        <Breadcrumb>
+                    <Hero.Body style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <Breadcrumb style={{ marginBottom: "0" }}>
                             <Breadcrumb.Item>
                                 <FaBook size="1.33em" />
                                 <Heading size={5} style={{ marginLeft: "1em" }} renderAs={Link} to="/">Albums</Heading>
@@ -155,6 +156,17 @@ const PhotoPage: React.FC<PageProps<object, { album_slug: string, album: string,
                                 <Heading size={5} textColor="black" renderAs='a'>{photo.slug}</Heading>
                             </Breadcrumb.Item>
                         </Breadcrumb>
+                        <Button
+                            text
+                            onClick={() =>
+                                saveAs(
+                                    photo.imageFile!.childImageSharp!.original.images.fallback!.src,
+                                    photo.slug
+                                )
+                            }
+                        >
+                            <FaDownload size="0.875em" className="inverted-icon" />
+                        </Button>
                     </Hero.Body>
                 </Hero>
                 <div id="imageContainer">
@@ -191,7 +203,7 @@ const PhotoPage: React.FC<PageProps<object, { album_slug: string, album: string,
                             />
                         </Draggable>
                     </Modal>
-                    <div onClick={() => setIsZoomed(true)} id="image">
+                    <div style={{ backgroundColor: "var(--card-bg)" }} onClick={() => setIsZoomed(true)} id="image">
                         <GatsbyImage
                             style={{
                                 width: '70vw',
