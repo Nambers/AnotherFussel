@@ -5,14 +5,10 @@ import { FaCreativeCommons, FaCreativeCommonsBy, FaCreativeCommonsSa } from "rea
 
 //#region photo settings
 
-const get_date = (inp: any): number => {
-    return inp ? new Date(inp).getTime() : 0;
-}
-
 // Sort photos inside album
 // default sort by date, ascending order
 export const photos_sort = ((a: PhotoData, b: PhotoData): number => {
-    return get_date(a.exif.DateTimeOriginal) - get_date(b.exif.DateTimeOriginal);
+    return b.timestamp - a.timestamp;
 });
 
 // Photo file filter extensions
@@ -39,8 +35,7 @@ export const exifr_filter = (exif: ExifData): ExifData => {
 // Sort album
 // default sort by oldest date of photo inside, ascending order
 export const albums_sort = ((a: AlbumData, b: AlbumData): number => {
-    return a.photos.reduce((max, item) => Math.max(max, get_date(item.exif.DateTimeOriginal)), 0)
-        - b.photos.reduce((max, item) => Math.max(max, get_date(item.exif.DateTimeOriginal)), 0);
+    return b.oldest_timestamp - a.oldest_timestamp;
 });
 
 // Separator before sub-album name in display name
@@ -76,11 +71,13 @@ export const flatten_index = false;
 
 // you can add something for analytics here
 // e.g. for umami
-// const umami: { trackView: any } | undefined = (window as any).umami
-// umami?.trackView(window.location.pathname + window.location.hash);
+// export const swiper_hash_listener = () => {
+//     const umami: { trackView: any } | undefined = (window as any).umami
+//     umami?.trackView(window.location.pathname + window.location.hash);
+// }
 export const swiper_hash_listener = () => { };
 
 export const enable_photo_info_page = true;
-export const enable_map_page = true;
+export const enable_map_page = false;
 
 //#endregion website settings

@@ -1,6 +1,6 @@
 import { CreateSchemaCustomizationArgs, SourceNodesArgs } from "gatsby";
 import type { AlbumData, PhotoData } from "./types";
-import { albums_sort, photos_sort, photo_exts, flatten_index, enable_photo_info_page, enable_map_page } from "./config";
+import { photos_sort, photo_exts, flatten_index, enable_photo_info_page, enable_map_page, albums_sort } from "./config";
 import fs from 'fs';
 import exifr from 'exifr';
 import path from 'path';
@@ -10,6 +10,7 @@ import { exifr_options, exifr_filter, sub_album_sep } from './config';
 export const createSchemaCustomization = ({ actions: { createTypes } }: CreateSchemaCustomizationArgs): void => {
     const typeDefs = `
         type PhotoAlbum implements Node @dontInfer {
+            sortIndex: Int!
             name: String!
             photos: [PhotoData!]!
             slug: String!
@@ -26,6 +27,18 @@ export const createSchemaCustomization = ({ actions: { createTypes } }: CreateSc
         `
     createTypes(typeDefs)
 }
+
+const get_date = (inp: any): number => {
+    if (!inp) return 0;
+    return inp instanceof Date ? inp.getTime() : 0;
+}
+
+const get_album_oldest_timestamp = (photos: PhotoData[]): number => {
+    const timestamps = photos
+        .map(p => p.timestamp)
+        .filter(t => t > 0);
+    return timestamps.length > 0 ? Math.min(...timestamps) : 0;
+};
 
 const parsePhotos = async (albumPath: string, displayName: string | null): Promise<AlbumData[]> => {
     const files = fs.readdirSync(albumPath);
@@ -48,12 +61,13 @@ const parsePhotos = async (albumPath: string, displayName: string | null): Promi
         console.log(`Processing photo: ${relPhotoPath}`);
 
         try {
-            const exif = await ((exifr.parse(photoPath, exifr_options) || {}).then(exifr_filter));
+            const exif = exifr_filter((await exifr.parse(photoPath, exifr_options)) || {});
             return {
                 name: photo,
                 path: relPhotoPath,
                 exif,
-                slug: slugify(photo, { lower: true })
+                slug: slugify(photo, { lower: true }),
+                timestamp: get_date(exif.DateTimeOriginal)
             };
         } catch (error) {
             console.error(`Error parsing EXIF for ${photoPath}:`, error);
@@ -61,7 +75,8 @@ const parsePhotos = async (albumPath: string, displayName: string | null): Promi
                 name: photo,
                 path: relPhotoPath,
                 exif: {},
-                slug: slugify(photo, { lower: true })
+                slug: slugify(photo, { lower: true }),
+                timestamp: 0
             };
         }
     };
@@ -74,7 +89,8 @@ const parsePhotos = async (albumPath: string, displayName: string | null): Promi
         name: displayName!,
         photos,
         slug: slugify(path.basename(albumPath), { lower: true }),
-        cover: photos[0].path
+        cover: photos[0].path,
+        oldest_timestamp: get_album_oldest_timestamp(photos)
     }] : [];
 
     const subAlbumResults = await Promise.all(
@@ -91,16 +107,19 @@ export const sourceNodes = async ({
     const albumsPath = `${__dirname}/src/images/input`
 
     try {
-        (await parsePhotos(albumsPath, null)).sort(albums_sort).map((album: AlbumData) => {
+        const albums = await parsePhotos(albumsPath, null);
+
+        albums.sort(albums_sort).forEach((album, i) => {
             createNode({
                 id: album.name,
+                sortIndex: i,
                 ...album,
                 internal: {
                     type: 'PhotoAlbum',
                     contentDigest: createContentDigest(album)
                 }
-            })
-        })
+            });
+        });
     } catch (error) {
         console.error('Error processing albums:', error)
     }

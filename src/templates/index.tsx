@@ -64,7 +64,7 @@ export default IndexPage
 
 export const query = graphql`
   query IndexPageQuery {
-    allPhotoAlbum {
+    allPhotoAlbum(sort: { sortIndex: ASC }) {
       edges {
         node {
           name
