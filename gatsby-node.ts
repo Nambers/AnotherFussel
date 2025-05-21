@@ -1,3 +1,6 @@
+/*global console*/
+/* eslint no-console: "off" */
+
 import { CreateSchemaCustomizationArgs, SourceNodesArgs } from "gatsby";
 import type { AlbumData, PhotoData } from "./types";
 import { photos_sort, photo_exts, flatten_index, enable_photo_info_page, enable_map_page, albums_sort } from "./config";

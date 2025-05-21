@@ -21,7 +21,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/keyboard';
 
-const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["allPhotoAlbum"]["edges"][0]["node"], flatten: boolean | undefined }>> = ({ pageContext }) => {
+const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["allPhotoAlbum"]["edges"][0]["node"], flatten?: boolean }>> = ({ pageContext }) => {
     const album = pageContext.album;
     const flatten = pageContext.flatten;
 
