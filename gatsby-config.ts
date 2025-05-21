@@ -36,7 +36,11 @@ const config: GatsbyConfig = {
       options: {
         icon: `src/images/icon.png`,
       },
-    },]
+    },],
+  flags: {
+    PARALLEL_SOURCING: true,
+    // PARTIAL_HYDRATION: true,
+  }
 };
 
 export default config;

@@ -69,14 +69,6 @@ export const custom_footer = (
 // Flatten album in index page to show all photos
 export const flatten_index = false;
 
-// you can add something for analytics here
-// e.g. for umami
-// export const swiper_hash_listener = () => {
-//     const umami: { trackView: any } | undefined = (window as any).umami
-//     umami?.trackView(window.location.pathname + window.location.hash);
-// }
-export const swiper_hash_listener = () => { };
-
 export const enable_photo_info_page = true;
 export const enable_map_page = false;
 

@@ -1,3 +1,5 @@
+"use client"
+
 import * as React from 'react';
 import { Layout } from "../components/layout"
 import { navigate, PageProps, Link } from "gatsby"
@@ -9,7 +11,7 @@ import Masonry, { ResponsiveMasonry } from "react-responsive-masonry"
 import { Container, Heading, Hero, Breadcrumb, Button } from 'react-bulma-components';
 import { FaBook, FaCircleInfo, FaDownload } from 'react-icons/fa6';
 import { FaTimes } from 'react-icons/fa';
-import { enable_photo_info_page, swiper_hash_listener } from "../../config";
+import { enable_photo_info_page } from "../../config";
 import { saveAs } from "file-saver";
 
 import '../styles/album.css';
@@ -19,8 +21,9 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/keyboard';
 
-const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["allPhotoAlbum"]["edges"][0]["node"] }>> = ({ pageContext }) => {
+const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["allPhotoAlbum"]["edges"][0]["node"], flatten: boolean | undefined }>> = ({ pageContext }) => {
     const album = pageContext.album;
+    const flatten = pageContext.flatten;
 
     const initialHash = typeof window !== 'undefined' ? window.location.hash.substring(1) : "";
     const [state, setState] = React.useState({
@@ -30,7 +33,7 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
     const [currentIndex, setCurrentIndex] = React.useState(initialIndex >= 0 ? initialIndex : 0);
 
     const openModal = (event: React.MouseEvent) => {
-        navigate("/albums/" + album.slug + "#" + (event.target as HTMLElement).dataset.slug, { replace: true });
+        navigate((flatten ? "/" : "/albums/" + album.slug) + "#" + (event.target as HTMLElement).dataset.slug, { replace: true });
         // if we don't wait a bit, the hash navigation won't work
         // it will read slug from last time
         setTimeout(() => {
@@ -39,14 +42,9 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
     };
 
     const closeModal = () => {
-        navigate("/albums/" + album.slug, { replace: true });
+        navigate(flatten ? "/" : "/albums/" + album.slug, { replace: true });
         setState({ viewerIsOpen: false });
     };
-
-    React.useEffect(() => {
-        window.addEventListener('hashchange', swiper_hash_listener);
-        return () => window.removeEventListener('hashchange', swiper_hash_listener);
-    }, []);
 
     React.useEffect(() => {
         if (state.viewerIsOpen) {
@@ -179,7 +177,7 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
                     className="swiper"
                 >
                     {
-                        album.photos.map((image, i) => (
+                        album.photos.map((image,) => (
                             <SwiperSlide data-hash={image.slug}>
                                 <GatsbyImage
                                     objectFit="contain"

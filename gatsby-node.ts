@@ -66,7 +66,7 @@ const parsePhotos = async (albumPath: string, displayName: string | null): Promi
                 name: photo,
                 path: relPhotoPath,
                 exif,
-                slug: slugify(photo, { lower: true }),
+                slug: slugify(photo, { lower: true, strict: true }),
                 timestamp: get_date(exif.DateTimeOriginal)
             };
         } catch (error) {
@@ -75,7 +75,7 @@ const parsePhotos = async (albumPath: string, displayName: string | null): Promi
                 name: photo,
                 path: relPhotoPath,
                 exif: {},
-                slug: slugify(photo, { lower: true }),
+                slug: slugify(photo, { lower: true, strict: true }),
                 timestamp: 0
             };
         }
@@ -88,7 +88,7 @@ const parsePhotos = async (albumPath: string, displayName: string | null): Promi
     const currentAlbum: AlbumData[] = photos.length ? [{
         name: displayName!,
         photos,
-        slug: slugify(path.basename(albumPath), { lower: true }),
+        slug: slugify(path.basename(albumPath), { lower: true, strict: true }),
         cover: photos[0].path,
         oldest_timestamp: get_album_oldest_timestamp(photos)
     }] : [];
@@ -162,12 +162,31 @@ export const createPages = async ({ actions: { createSlice, createPage }, graphq
                 }
             }
         }`)).data
-    if (flatten_index)
+
+    const flattenedAlbum: {
+        name: string;
+        slug: string;
+        photos: any[];
+        cover: string;
+    } = {
+        name: "All Photos",
+        slug: "flatten",
+        photos: [],
+        cover: ""
+    }
+    if (flatten_index) {
+        const allPhotos = albums.allPhotoAlbum.edges.flatMap(edge => edge.node.photos);
+        flattenedAlbum.photos = allPhotos;
+        flattenedAlbum
         createPage({
             path: `/`,
-            component: path.resolve(`./src/templates/index-flatten.tsx`),
+            component: path.resolve(`./src/templates/album.tsx`),
+            context: {
+                album: flattenedAlbum,
+                flatten: true
+            }
         })
-    else {
+    } else {
         createPage({
             path: `/`,
             component: path.resolve(`./src/templates/index.tsx`),
@@ -186,11 +205,11 @@ export const createPages = async ({ actions: { createSlice, createPage }, graphq
         albums.allPhotoAlbum.edges.forEach(({ node }) => {
             node.photos.forEach((photo) => {
                 createPage({
-                    path: `/albums/${node.slug}/${photo.slug}`,
+                    path: `/albums/${(flatten_index ? flattenedAlbum : node).slug}/${photo.slug}`,
                     component: path.resolve(`./src/templates/photo.tsx`),
                     context: {
-                        album: node.name,
-                        album_slug: node.slug,
+                        album: (flatten_index ? flattenedAlbum : node).name,
+                        album_slug: (flatten_index ? flattenedAlbum : node).slug,
                         photo
                     }
                 })
