@@ -4,6 +4,7 @@ public
 src/gatsby-types.d.ts
 src/images/input
 package-lock.json
+pnpm-lock.yaml
 src/generated
 config.tsx
 src/images/icon.png
