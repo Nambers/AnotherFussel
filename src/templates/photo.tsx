@@ -5,12 +5,11 @@ import { Layout } from "../components/layout"
 import { PageProps, Link } from "gatsby"
 import { GatsbyImage } from 'gatsby-plugin-image';
 import { Container, Hero, Breadcrumb, Heading, Button, Icon } from 'react-bulma-components';
-import Modal from 'react-modal';
 import { FaBook, FaDownload } from 'react-icons/fa6';
-import { FaTimes } from 'react-icons/fa';
 import { SiSony, SiNikon } from 'react-icons/si';
 import type { IconType } from 'react-icons';
 import { saveAs } from "file-saver";
+import ZoomModal from "../components/zoom";
 
 import '../styles/photo.css';
 import '../styles/icon.css';
@@ -20,115 +19,12 @@ const BRANDS_ICONS: { [key: string]: IconType } = {
     "nikon": SiNikon
 };
 
-// adapted from https://stackoverflow.com/a/20927899
-const Draggable: React.FC<{ initialPos?: { x: number, y: number }, children: React.ReactNode }> = ({ initialPos = { x: 0, y: 0 }, children }) => {
-    const [pos, setPos] = React.useState(initialPos);
-    const [dragging, setDragging] = React.useState(false);
-    const [rel, setRel] = React.useState<{ x: number, y: number } | null>(null);
-
-    React.useEffect(() => {
-        const onMouseMove = (e: MouseEvent) => {
-            if (!dragging || !rel) return;
-            setPos({
-                x: e.pageX - rel.x,
-                y: e.pageY - rel.y
-            });
-            e.stopPropagation();
-            e.preventDefault();
-        };
-
-        const onMouseUp = (e: MouseEvent) => {
-            setDragging(false);
-            e.stopPropagation();
-            e.preventDefault();
-        };
-
-        if (dragging) {
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
-        } else {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        return () => {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        };
-    }, [dragging, rel]);
-
-    const onMouseDown = (e: React.MouseEvent) => {
-        if (e.button !== 0) return;
-        const pos = (e.target as HTMLElement).getBoundingClientRect();
-        setDragging(true);
-        setRel({
-            x: e.pageX - pos.left,
-            y: e.pageY - pos.top
-        });
-        e.stopPropagation();
-        e.preventDefault();
-    };
-
-    const handleTouchStart = (e: React.TouchEvent) => {
-        const touch = e.touches[0];
-        const pos = (e.target as HTMLElement).getBoundingClientRect();
-        setDragging(true);
-        setRel({
-            x: touch.pageX - pos.left,
-            y: touch.pageY - pos.top
-        });
-    };
-
-    const handleTouchMove = (e: React.TouchEvent) => {
-        if (!dragging || !rel) return;
-        const touch = e.touches[0];
-        setPos({
-            x: touch.pageX - rel.x,
-            y: touch.pageY - rel.y
-        });
-    };
-
-    const handleTouchEnd = () => {
-        setDragging(false);
-    };
-
-
-    return (
-        <div
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onMouseDown={onMouseDown}
-            style={{
-                position: 'absolute',
-                left: pos.x + 'px',
-                top: pos.y + 'px',
-                cursor: dragging ? 'grabbing' : 'grab'
-            }}
-        >
-            {children}
-        </div>
-    );
-};
-
 const PhotoPage: React.FC<PageProps<object, { album_slug: string, album: string, photo: Queries.albumsQueryQuery["allPhotoAlbum"]["edges"][0]["node"]["photos"][0] }>> = ({ pageContext }) => {
     const photo = pageContext.photo;
     const album = pageContext.album;
     const album_slug = pageContext.album_slug;
 
     const [isZoomed, setIsZoomed] = React.useState(false);
-
-    React.useEffect(() => {
-        if (isZoomed) {
-            document.documentElement.style.overflow = 'hidden';
-
-        } else {
-            document.documentElement.style.overflow = '';
-        }
-        return () => {
-            document.documentElement.style.overflow = '';
-        };
-    }, [isZoomed]);
 
     var brand_icon = <></>;
     if ("Make" in photo.exif) {
@@ -172,39 +68,12 @@ const PhotoPage: React.FC<PageProps<object, { album_slug: string, album: string,
                     </Hero.Body>
                 </Hero>
                 <div id="imageContainer">
-                    <Modal
+                    <ZoomModal
                         isOpen={isZoomed}
-                        onRequestClose={() => setIsZoomed(false)}
-                        shouldCloseOnOverlayClick
-                        shouldCloseOnEsc
-                        style={{
-                            overlay: {
-                                backgroundColor: 'rgba(0, 0, 0, 0.95)',
-                                zIndex: 1000
-                            },
-                            content: {
-                                inset: 0,
-                                padding: 0,
-                                border: 'none',
-                                background: 'none',
-                                overflow: 'hidden'
-                            }
-                        }}
-                    >
-                        <Button text className="modal-close-button" onClick={() => setIsZoomed(false)} style={{
-                            filter: "invert(1)",
-                            mixBlendMode: "difference"
-                        }} >
-                            <FaTimes className="inverted-icon" />
-                        </Button>
-                        <Draggable>
-                            <GatsbyImage
-                                image={photo.imageFile!.childImageSharp!.original!}
-                                alt={photo.path}
-                                loading='lazy'
-                            />
-                        </Draggable>
-                    </Modal>
+                        onClose={() => setIsZoomed(false)}
+                        image={photo.imageFile!.childImageSharp!.original!}
+                        alt={photo.path}
+                    />
                     <div style={{ backgroundColor: "var(--card-bg)" }} onClick={() => setIsZoomed(true)} id="image">
                         <GatsbyImage
                             style={{

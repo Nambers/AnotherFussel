@@ -49,7 +49,7 @@ const IndexPage: React.FC<PageProps<Queries.IndexPageQueryQuery>> = ({ data }) =
             <Breadcrumb>
               <Breadcrumb.Item active>
                 <FaBook size="1.33em" />
-                <Heading size={5} textColor="black" style={{ marginLeft: "1em" }} renderAs="a">Albums</Heading>
+                <Heading size={5} className="has-text-text" style={{ marginLeft: "1em" }} renderAs="a">Albums</Heading>
               </Breadcrumb.Item>
             </Breadcrumb>
           </Hero.Body>

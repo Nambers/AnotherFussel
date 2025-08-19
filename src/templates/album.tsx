@@ -13,6 +13,7 @@ import { FaBook, FaCircleInfo, FaDownload } from 'react-icons/fa6';
 import { FaTimes } from 'react-icons/fa';
 import { enable_photo_info_page } from "../../config";
 import { saveAs } from "file-saver";
+import ZoomModal from "../components/zoom";
 
 import '../styles/album.css';
 import '../styles/icon.css';
@@ -31,6 +32,7 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
     });
     const initialIndex = album.photos.findIndex(photo => photo.slug === initialHash);
     const [currentIndex, setCurrentIndex] = React.useState(initialIndex >= 0 ? initialIndex : 0);
+    const [isZoomed, setIsZoomed] = React.useState(false);
 
     const openModal = (event: React.MouseEvent) => {
         navigate((flatten ? "/" : "/albums/" + album.slug) + "#" + (event.target as HTMLElement).dataset.slug, { replace: true });
@@ -69,7 +71,7 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
                                 <Link className="title is-5" to="/" style={{ marginLeft: "1em" }}>Albums</Link>
                             </Breadcrumb.Item>
                             <Breadcrumb.Item active>
-                                <Heading size={5} textColor="black" renderAs='a'>{album.name}</Heading>
+                                <Heading size={5} className="has-text-text" renderAs='a'>{album.name}</Heading>
                             </Breadcrumb.Item>
                         </Breadcrumb>
                     </Hero.Body>
@@ -115,6 +117,22 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
                     }
                 }}
             >
+                <div
+                    className="has-text-text"
+                    style={{
+                        position: 'absolute',
+                        top: '15px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        zIndex: 100,
+                        color: 'white',
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        textShadow: '0 1px 3px rgba(0,0,0,0.8)'
+                    }}
+                >
+                    {currentIndex + 1} / {album.photos.length}
+                </div>
                 <div
                     style={{
                         position: 'absolute',
@@ -177,15 +195,46 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
                     className="swiper"
                 >
                     {
-                        album.photos.map((image,) => (
-                            <SwiperSlide data-hash={image.slug}>
-                                <GatsbyImage
-                                    objectFit="contain"
-                                    className="gallery-image"
-                                    image={image.imageFile!.childImageSharp!.large}
-                                    alt={image.path}
-                                    loading="lazy"
-                                />
+                        album.photos.map((image, index) => (
+                            <SwiperSlide key={image.slug} data-hash={image.slug}>
+                                <div
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        console.log('Image clicked, setting zoom to true');
+                                        setIsZoomed(true);
+                                    }}
+                                    style={{
+                                        cursor: 'zoom-in',
+                                        height: '100%',
+                                        width: '100%',
+                                    }}
+                                >
+                                    <GatsbyImage
+                                        objectFit="contain"
+                                        className="gallery-image"
+                                        image={image.imageFile!.childImageSharp!.large}
+                                        alt={image.path}
+                                        loading="lazy"
+                                        style={{
+                                            userSelect: 'none',
+                                            WebkitUserSelect: 'none',
+                                            MozUserSelect: 'none',
+                                            msUserSelect: 'none',
+                                            pointerEvents: 'none'
+                                        }}
+                                    />
+                                </div>
+                                {index === currentIndex && (
+                                    <ZoomModal
+                                        isOpen={isZoomed}
+                                        onClose={() => {
+                                            console.log('Zoom modal closing');
+                                            setIsZoomed(false);
+                                        }}
+                                        image={image.imageFile!.childImageSharp!.original!}
+                                        alt={image.path}
+                                    />
+                                )}
                             </SwiperSlide>
                         ))
                     }
