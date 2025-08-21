@@ -4,65 +4,169 @@ import * as React from "react"
 import { Layout } from "../components/layout"
 import { PageProps } from "gatsby";
 import { Container } from "react-bulma-components";
-import {
-    ComposableMap,
-    Geographies,
-    Geography
-} from "react-simple-maps";
+import { Icon } from "leaflet";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { Country, State, City } from 'country-state-city';
 
-import "../styles/map.css"
+import 'leaflet/dist/leaflet.css';
 
-const MapPage: React.FC<PageProps> = () => {
+const MapPage: React.FC<PageProps<object, { locDicts: { [slug: string]: { name: string, locDict: Record<string, number> } } }>> = ({ pageContext }) => {
+    // fix https://github.com/Leaflet/Leaflet/issues/4968
+    if (typeof window !== "undefined") {
+        delete (Icon.Default.prototype as any)._getIconUrl;
+        Icon.Default.mergeOptions({
+            iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png').default,
+            iconUrl: require('leaflet/dist/images/marker-icon.png').default,
+            shadowUrl: require('leaflet/dist/images/marker-shadow.png').default
+        });
+    }
+
+    const mapRef = React.useRef<HTMLDivElement>(null);
+    const mapInstance = React.useRef<any>(null);
+    // transform to "LOC": [album name]
+    const allLocs: [string, string, Set<string>][] = [];
+
+    Object.entries(pageContext.locDicts).forEach(([albumName, locDict]) => {
+        Object.keys(locDict.locDict)
+            .filter((loc) => loc && loc.trim() !== "")
+            .forEach((loc) => {
+                const [city, state, country] = loc.split(",").map(s => s.trim());
+                let latitude: string | null | undefined = null;
+                let longitude: string | null | undefined = null;
+
+                if (city != "") {
+                    const cities = City.getCitiesOfCountry(country.length === 2 ? country : (Country.getAllCountries().find(c => c.name === country)?.isoCode || ""));
+                    if (cities) {
+                        const matchedCity = cities.find(c => c.name === city && (state === "" || c.stateCode === state));
+                        if (matchedCity) {
+                            latitude = matchedCity.latitude;
+                            longitude = matchedCity.longitude;
+                        } else {
+                            console.error(`City not found: ${city}, state: ${state}, country: ${country}, album: ${albumName}`);
+                        }
+                    } else {
+                        console.error(`Cities not found for country: ${country}, album: ${albumName}`);
+                    }
+                } else if (state != "") {
+                    const states = State.getStatesOfCountry(country.length === 2 ? country : (Country.getAllCountries().find(c => c.name === country)?.isoCode || ""));
+                    if (states) {
+                        const matchedState = states.find(s => s.name === state || s.isoCode === state);
+                        if (matchedState) {
+                            latitude = matchedState.latitude;
+                            longitude = matchedState.longitude;
+                        } else {
+                            console.error(`State not found: ${state}, country: ${country}, album: ${albumName}`);
+                        }
+                    } else {
+                        console.error(`States not found country: ${country}, album: ${albumName}`);
+                    }
+                } else if (country != "") {
+                    const matchedCountry = Country.getAllCountries().find(c => c.name === country || c.isoCode === country);
+                    if (matchedCountry) {
+                        latitude = matchedCountry.latitude;
+                        longitude = matchedCountry.longitude;
+                    } else {
+                        console.error(`Country not found: ${country}, album: ${albumName}`);
+                    }
+                } else {
+                    console.error(`No valid location found for: ${loc}, album: ${albumName}`);
+                }
+
+                // Group album names by location
+                if (latitude && longitude) {
+                    const key = `${latitude},${longitude}`;
+                    const existing = allLocs.find(([lat, lng]) => lat === latitude && lng === longitude);
+                    if (existing) {
+                        // Add album name to existing set
+                        (existing[2] as Set<string>).add(albumName);
+                    } else {
+                        allLocs.push([latitude, longitude, new Set([albumName])]);
+                    }
+                }
+            });
+    });
+
+    // React.useEffect(() => {
+    //     if (mapRef.current && !mapInstance.current) {
+    //         const options: MapOptions = {
+    //             center: latLng(20, 0),
+    //             zoom: 1,
+    //             minZoom: 1,
+    //         };
+
+    //         mapInstance.current = map(mapRef.current, options);
+
+    //         tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    //             maxZoom: 19,
+    //             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    //         }).addTo(mapInstance.current);
+
+    //         mapInstance.current.setMaxBounds([
+    //             [-85, -180],
+    //             [85, 180]
+    //         ]);
+
+    //         // Add markers for each location
+    //         allLocs.forEach((loc: [string, string, Set<string>]) => {
+    //             const [lat, lng, names] = loc;
+    //             marker([Number(lat), Number(lng)]).addTo(mapInstance.current)
+    //                 .bindPopup(Array.from(names).map(slug => `<a href="/albums/${slug}">${pageContext.locDicts[slug].name}</a>`).join("<br/>"));
+    //         });
+    //     }
+
+    //     // Cleanup function
+    //     return () => {
+    //         if (mapInstance.current) {
+    //             mapInstance.current.remove();
+    //             mapInstance.current = null;
+    //         }
+    //     };
+    // }, []);
     return (
         <Layout>
-            <Container>
-                <div style={{ padding: "1.5em", margin: "0 auto" }}>
-                    {/* <!-- style adapt from https://stackoverflow.com/a/63615485/14646226 --> */}
-                    <ComposableMap
-                        className="parchment"
-                        projection="geoEquirectangular"
-                        projectionConfig={{
-                            scale: 147,
-                            center: [0, 0]
-                        }}
-                        width={980}
-                        height={551}
-                    >
-                        {/* map from https://github.com/topojson/world-atlas */}
-                        <Geographies geography="/countries-50m.json">
-                            {({ geographies }) =>
-                                geographies.map(geo => (
-                                    <Geography
-                                        key={geo.rsmKey}
-                                        geography={geo}
-                                        className="land-geography"
-                                        style={{
-                                            default: {
-                                                fill: "#d5b78a",
-                                                stroke: "#8b4513"
-                                            },
-                                            hover: {
-                                                fill: "#b38b5d",
-                                                stroke: "#8b4513",
-                                                cursor: "pointer"
-                                            }
-                                        }}
-                                    />
-                                ))
-                            }
-                        </Geographies>
-                    </ComposableMap>
+            <Container style={{ padding: "1.5em", width: "100%", margin: "0 auto" }}>
+                {/* <div
+                    ref={mapRef}
+                    style={{
+                        width: "100%",
+                        height: "50vh",
+                        minHeight: "300px",
+                        margin: "0 auto",
+                        display: "block",
+                        boxSizing: "border-box",
+                        boxShadow: "0 8px 24px rgba(0,0,0,0.15), 0 -8px 24px rgba(0,0,0,0.10) inset",
+                        background: "linear-gradient(180deg, #e3eafc 0%, #fff 100%)"
+                    }}
+                /> */}
+                <MapContainer style={{ width: "100%", height: "50vh", minHeight: "400px" }} center={[20, 0]} zoom={1} scrollWheelZoom={true}>
+                    <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution='&copy; <a href="https://www.openstreetmap.org">OpenStreetMap</a> contributors'
+                    />
+                    {allLocs.map(([lat, lng, names]) => (
+                        <Marker key={`${lat},${lng}`} position={[Number(lat), Number(lng)]}>
+                            <Popup>
+                                {Array.from(names).map(slug => (
+                                    <div key={slug}>
+                                        <a href={`/albums/${slug}`}>{pageContext.locDicts[slug].name}</a>
+                                    </div>
+                                ))}
+                            </Popup>
+                        </Marker>
+                    ))}
+                </MapContainer>
+                <div style={{
+                    textAlign: "center",
+                    marginTop: "1em",
+                    color: "#888",
+                    fontStyle: "italic"
+                }}>
+                    Map reflects locations of albums.
                 </div>
-                <svg>
-                    <filter id="wavy2">
-                        <feTurbulence x="0" y="0" baseFrequency="0.02" numOctaves="5" seed="1" />
-                        <feDisplacementMap in="SourceGraphic" scale="20" />
-                    </filter>
-                </svg>
-
             </Container>
-        </Layout >
+        </Layout>
     )
 }
+
 
 export default MapPage;

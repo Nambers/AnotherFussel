@@ -15,5 +15,6 @@ export type AlbumData = {
     photos: PhotoData[]
     slug: string
     cover: string,
-    oldest_timestamp: number
+    oldest_timestamp: number,
+    locDict: { [key: string]: number }
 }

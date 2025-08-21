@@ -2,13 +2,14 @@
 /* eslint no-console: "off" */
 
 import { CreateSchemaCustomizationArgs, SourceNodesArgs } from "gatsby";
-import type { AlbumData, PhotoData } from "./types";
+import type { AlbumData, ExifData, PhotoData } from "./types";
 import { photos_sort, photo_exts, flatten_index, enable_photo_info_page, enable_map_page, albums_sort } from "./config";
 import fs from 'fs';
 import exifr from 'exifr';
 import path from 'path';
 import slugify from 'slugify';
 import { exifr_options, exifr_filter, sub_album_sep } from './config';
+import type { GatsbyNode } from "gatsby";
 
 export const createSchemaCustomization = ({ actions: { createTypes } }: CreateSchemaCustomizationArgs): void => {
     const typeDefs = `
@@ -19,6 +20,7 @@ export const createSchemaCustomization = ({ actions: { createTypes } }: CreateSc
             slug: String!
             cover: String!
             coverFile: File @link(by: "relativePath", from: "cover")
+            locDict: JSON
         }
         type PhotoData {
             name: String!
@@ -43,8 +45,14 @@ const get_album_oldest_timestamp = (photos: PhotoData[]): number => {
     return timestamps.length > 0 ? Math.min(...timestamps) : 0;
 };
 
+const build_loc = (exif: ExifData): string => {
+    // city,state,country
+    return String(exif["City"] ?? "") + "," + String(exif["State"] ?? "") + "," + String(exif["Country"] ?? "");
+}
+
 const parsePhotos = async (albumPath: string, displayName: string | null): Promise<AlbumData[]> => {
     const files = fs.readdirSync(albumPath);
+    let locDict: { [key: string]: number } = {};
 
     const [photoFiles, subAlbums] = files.reduce((acc: [string[], string[]], file: string) => {
         const fullPath = `${albumPath}/${file}`;
@@ -65,6 +73,7 @@ const parsePhotos = async (albumPath: string, displayName: string | null): Promi
 
         try {
             const exif = exifr_filter((await exifr.parse(photoPath, exifr_options)) || {});
+            locDict[build_loc(exif)] = (locDict[build_loc(exif)] || 0) + 1;
             return {
                 name: photo,
                 path: relPhotoPath,
@@ -93,7 +102,8 @@ const parsePhotos = async (albumPath: string, displayName: string | null): Promi
         photos,
         slug: slugify(path.basename(albumPath), { lower: true, strict: true }),
         cover: photos[0].path,
-        oldest_timestamp: get_album_oldest_timestamp(photos)
+        oldest_timestamp: get_album_oldest_timestamp(photos),
+        locDict: locDict
     }] : [];
 
     const subAlbumResults = await Promise.all(
@@ -146,21 +156,22 @@ export const createPages = async ({ actions: { createSlice, createPage }, graphq
             allPhotoAlbum {
                 edges {
                     node {
-                    name
-                    slug
-                    photos {
-                        exif
+                        name
                         slug
-                        path
-                        imageFile {
-                            childImageSharp {
-                                thumbnail: gatsbyImageData(width:500, layout: CONSTRAINED, transformOptions: {fit: CONTAIN})
-                                large: gatsbyImageData(width:1600, layout: CONSTRAINED, transformOptions: {fit: CONTAIN})
-                                single: gatsbyImageData(layout: FULL_WIDTH, transformOptions: {fit: CONTAIN})
-                                original: gatsbyImageData(layout: FIXED)
+                        photos {
+                            exif
+                            slug
+                            path
+                            imageFile {
+                                childImageSharp {
+                                    thumbnail: gatsbyImageData(width:500, layout: CONSTRAINED, transformOptions: {fit: CONTAIN})
+                                    large: gatsbyImageData(width:1600, layout: CONSTRAINED, transformOptions: {fit: CONTAIN})
+                                    single: gatsbyImageData(layout: FULL_WIDTH, transformOptions: {fit: CONTAIN})
+                                    original: gatsbyImageData(layout: FIXED)
+                                }
                             }
                         }
-                    }
+                        locDict
                     }
                 }
             }
@@ -222,5 +233,29 @@ export const createPages = async ({ actions: { createSlice, createPage }, graphq
         createPage({
             path: `/map`,
             component: path.resolve(`./src/templates/map.tsx`),
+            context: {
+                locDicts: albums.allPhotoAlbum.edges.reduce((acc, edge) => {
+                    acc[edge.node.slug] = { name: edge.node.name, locDict: edge.node.locDict as Record<string, number> };
+                    return acc;
+                }, {} as { [slug: string]: { name: string, locDict: Record<string, number> } })
+            }
         });
 }
+
+export const onCreateWebpackConfig: GatsbyNode["onCreateWebpackConfig"] = ({
+    stage,
+    loaders,
+    actions
+}) => {
+    if (stage === "build-html" || stage === "develop-html") {
+        const regex = [/node_modules\/leaflet/, /node_modules\\leaflet/];
+        actions.setWebpackConfig({
+            module: {
+                rules: [{
+                    test: regex,
+                    use: loaders.null()
+                }]
+            }
+        });
+    }
+};

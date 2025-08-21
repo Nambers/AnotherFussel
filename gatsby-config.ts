@@ -40,6 +40,8 @@ const config: GatsbyConfig = {
   flags: {
     PARALLEL_SOURCING: true,
     // PARTIAL_HYDRATION: true,
+    DEV_SSR: true,
+    FAST_DEV: true,
   }
 };
 
