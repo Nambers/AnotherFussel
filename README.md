@@ -1,8 +1,16 @@
 # Another Fussel
 
+## Feature
+
+- 100% Static Site & Smooth Navigation, powered by [Gatsby](https://www.gatsbyjs.com/docs/conceptual/gatsby-core-philosophy/)
+- Optimized Image Processing, leverages [Gatsby's image optimization](https://www.gatsbyjs.com/docs/conceptual/using-gatsby-image/) to automatically generate responsive images, WebP format conversion, and lazy loading for enhanced user experience.
+- Photo Zoom Functionality, interactive zoom feature allowing visitors to view photos at their original resolution, perfect for showcasing high-quality photography details.
+- \[DISABLE-able\] Interactive Map Page, to gather geolocation of photos(need to fill City/State/Country EXIF info)
+- \[DISABLE-able\] Photo Detail Info page, to show EXIF details of photos(also EXIF filter available)
+
 ## What is this
 
-This work is largely based on Chris Benninger([cbenning](https://github.com/cbenning))'s project [Fuseel](https://github.com/cbenning/fussel) written in Python and React, and published under MIT License.  
+This work is largely inspired ny Chris Benninger([cbenning](https://github.com/cbenning))'s project [Fuseel](https://github.com/cbenning/fussel) written in Python and React, published under MIT License.  
 I rewrote it in TypeScript with Gatsby.  
 
 ## How to use
