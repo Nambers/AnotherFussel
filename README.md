@@ -7,6 +7,7 @@
 - Photo Zoom Functionality, interactive zoom feature allowing visitors to view photos at their original resolution, perfect for showcasing high-quality photography details.
 - \[DISABLE-able\] Interactive Map Page, to gather geolocation of photos(need to fill City/State/Country EXIF info)
 - \[DISABLE-able\] Photo Detail Info page, to show EXIF details of photos(also EXIF filter available)
+- \[DISABLE-able\] Gear spec Info page
 
 ## What is this
 
@@ -26,7 +27,7 @@ src
 
 ```
 
-1. install deps `npm i`.
+1. install deps `npm i`/`pnpm i`.
 2. copy `config-template.ts` to `config.ts`
 3. `gatsby develop`.
 4. `gatsby build`, then files should be listed under `public`.
