@@ -3,7 +3,7 @@
 
 import { CreateSchemaCustomizationArgs, SourceNodesArgs } from "gatsby";
 import type { AlbumData, ExifData, PhotoData } from "./types";
-import { photos_sort, photo_exts, flatten_index, enable_photo_info_page, enable_map_page, albums_sort } from "./config";
+import { photos_sort, photo_exts, flatten_index, enable_photo_info_page, enable_map_page, enable_gear_page, albums_sort, gears } from "./config";
 import fs from 'fs';
 import exifr from 'exifr';
 import path from 'path';
@@ -191,7 +191,6 @@ export const createPages = async ({ actions: { createSlice, createPage }, graphq
     if (flatten_index) {
         const allPhotos = albums.allPhotoAlbum.edges.flatMap(edge => edge.node.photos);
         flattenedAlbum.photos = allPhotos;
-        flattenedAlbum
         createPage({
             path: `/`,
             component: path.resolve(`./src/templates/album.tsx`),
@@ -239,6 +238,12 @@ export const createPages = async ({ actions: { createSlice, createPage }, graphq
                     return acc;
                 }, {} as { [slug: string]: { name: string, locDict: Record<string, number> } })
             }
+        });
+    if (enable_gear_page)
+        createPage({
+            path: `/gear`,
+            component: path.resolve(`./src/templates/gear.tsx`),
+            context: { gears: gears }
         });
 }
 

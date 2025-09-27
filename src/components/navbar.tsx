@@ -4,7 +4,7 @@ import "../styles/navbar.css";
 import { StaticImage } from 'gatsby-plugin-image';
 import { Navbar } from 'react-bulma-components';
 import { FaBook, FaMap, FaPhotoFilm, FaMoon, FaLightbulb } from 'react-icons/fa6';
-import { flatten_index, enable_map_page } from '../../config';
+import { flatten_index, enable_map_page, enable_gear_page } from '../../config';
 
 export default function navbarComp() {
     const [theme, setTheme] = React.useState(() => {
@@ -33,15 +33,24 @@ export default function navbarComp() {
             <Navbar.Menu className="is-active" style={{ display: "flex" }} shadowless>
                 <Navbar.Item renderAs={Link} to="/">
                     {flatten_index ? <FaPhotoFilm /> : <FaBook />}
-                    <span style={{ fontWeight: "bold", paddingLeft: "0.5em" }}>
+                    <span style={{ fontWeight: "bold", paddingLeft: "0.2em" }}>
                         {flatten_index ? "Photos" : "Albums"}
                     </span>
                 </Navbar.Item>
                 {enable_map_page &&
                     <Navbar.Item renderAs={Link} to="/map">
                         <FaMap />
-                        <span style={{ fontWeight: "bold" }}>
+                        <span style={{ fontWeight: "bold", paddingLeft: "0.2em" }}>
                             Map
+                        </span>
+                    </Navbar.Item>
+                }
+                {
+                    enable_gear_page &&
+                    <Navbar.Item renderAs={Link} to="/gear">
+                        <FaBook />
+                        <span style={{ fontWeight: "bold", paddingLeft: "0.2em" }}>
+                            Gear
                         </span>
                     </Navbar.Item>
                 }

@@ -52,7 +52,7 @@ export const custom_header = (<script></script>);
 export const custom_footer = (
     <p>
         All works made by&nbsp;
-        <Link to="/"><strong>ME</strong></Link>
+        <a href="/"><strong>ME</strong></a>
         &nbsp;and licensed under&nbsp;
         <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>
         &nbsp;
@@ -64,6 +64,28 @@ export const custom_footer = (
 
 //#endregion layout settings
 
+export const gears = {
+    cameras:
+        [
+            {
+                Brand: "Sony",
+                Type: "a7M II",
+                Focus: "DSLR",
+                Date: "May 2023 - Aug 2025",
+                Gone: true,
+            },
+        ],
+    lens:
+        [
+            {
+                Brand: "Asahi Opt. Co.",
+                Type: "Super-Takumar",
+                Focus: "1:1.8/55",
+                Date: "May 2023 - Present",
+            },
+        ]
+};
+
 //#region website settings
 
 // Flatten album in index page to show all photos
@@ -71,5 +93,6 @@ export const flatten_index = false;
 
 export const enable_photo_info_page = true;
 export const enable_map_page = false;
+export const enable_gear_page = false;
 
 //#endregion website settings
