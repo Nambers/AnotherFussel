@@ -62,7 +62,7 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
 
     return (
         <Layout>
-            <Container>
+            <Container style={{ flex: 1 }}>
                 <Hero size="small">
                     <Hero.Body>
                         <Breadcrumb>
@@ -76,170 +76,170 @@ const AlbumsPage: React.FC<PageProps<object, { album: Queries.albumsQueryQuery["
                         </Breadcrumb>
                     </Hero.Body>
                 </Hero>
-            </Container>
-            <ResponsiveMasonry
-                className="container"
-                columnsCountBreakPoints={{ 300: 1, 600: 2, 900: 3, 1200: 4, 1500: 5 }}
-            >
-                <Masonry
-                    gutter="10px"
+                <ResponsiveMasonry
+                    className="container"
+                    columnsCountBreakPoints={{ 300: 1, 600: 2, 900: 3, 1200: 4, 1500: 5 }}
                 >
-                    {
-                        album.photos.map((image, _) => (
-                            <div onClick={openModal}>
-                                <GatsbyImage
-                                    data-slug={image.slug}
-                                    image={image.imageFile!.childImageSharp!.thumbnail}
-                                    alt={image.path}
-                                    loading="lazy"
-                                    className="gallery-image"
-                                />
-                            </div>
-                        ))
-                    }
-                </Masonry>
-            </ResponsiveMasonry>
-            <Modal
-                isOpen={state.viewerIsOpen}
-                onRequestClose={closeModal}
-                shouldCloseOnEsc
-                // https://github.com/reactjs/react-modal/issues/279
-                // sadly Modal will return to top of page after closing
-
-                style={{
-                    overlay: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.3)'
-                    },
-                    content: {
-                        inset: '10px',
-                        padding: '10px',
-                        backgroundColor: 'rgba(0, 0, 0, 1)',
-                    }
-                }}
-            >
-                <div
-                    className="has-text-text"
-                    style={{
-                        position: 'absolute',
-                        top: '15px',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        zIndex: 100,
-                        color: 'white',
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        textShadow: '0 1px 3px rgba(0,0,0,0.8)'
-                    }}
-                >
-                    {currentIndex + 1} / {album.photos.length}
-                </div>
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: '15px',
-                        right: '15px',
-                        zIndex: 100,
-                        display: 'flex',
-                        gap: '12px',
-                        alignItems: 'center'
-                    }}
-                >
-                    <Button
-                        text
-                        onClick={() =>
-                            saveAs(
-                                album.photos[currentIndex].imageFile!.childImageSharp!.original.images.fallback!.src,
-                                album.photos[currentIndex].slug
-                            )
-                        }
+                    <Masonry
+                        gutter="10px"
                     >
-                        <FaDownload size="0.875em" className="inverted-icon" />
-                    </Button>
-
-                    {enable_photo_info_page && (
-                        <Button
-                            text
-                            id="infoModal"
-                            onClick={() =>
-                                navigate("/albums/" + album.slug + "/" + album.photos[currentIndex].slug, { replace: true })
-                            }
-                        >
-                            <FaCircleInfo size="0.875em" className="inverted-icon" />
-                        </Button>
-                    )}
-
-                    <Button
-                        text
-                        onClick={closeModal}
-                    >
-                        <FaTimes size="0.875em" className="inverted-icon" />
-                    </Button>
-                </div>
-
-
-                <Swiper
-                    slidesPerView={1}
-                    navigation={{
-                        enabled: true,
-                    }}
-                    keyboard={{ enabled: true, }}
-                    pagination={{ clickable: true, }}
-                    hashNavigation={{
-                        watchState: true,
-                        replaceState: true,
-                    }}
-                    onSlideChange={(swiper) => {
-                        setCurrentIndex(swiper.activeIndex);
-                    }}
-                    modules={[Navigation, Keyboard, HashNavigation, Pagination]}
-                    className="swiper"
-                >
-                    {
-                        album.photos.map((image, index) => (
-                            <SwiperSlide key={image.slug} data-hash={image.slug}>
-                                <div
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        console.log('Image clicked, setting zoom to true');
-                                        setIsZoomed(true);
-                                    }}
-                                    style={{
-                                        cursor: 'zoom-in',
-                                        height: '100%',
-                                        width: '100%',
-                                    }}
-                                >
+                        {
+                            album.photos.map((image, _) => (
+                                <div onClick={openModal}>
                                     <GatsbyImage
-                                        objectFit="contain"
-                                        className="gallery-image"
-                                        image={image.imageFile!.childImageSharp!.large}
+                                        data-slug={image.slug}
+                                        image={image.imageFile!.childImageSharp!.thumbnail}
                                         alt={image.path}
                                         loading="lazy"
-                                        style={{
-                                            userSelect: 'none',
-                                            WebkitUserSelect: 'none',
-                                            MozUserSelect: 'none',
-                                            msUserSelect: 'none',
-                                            pointerEvents: 'none'
-                                        }}
+                                        className="gallery-image"
                                     />
                                 </div>
-                                {index === currentIndex && (
-                                    <ZoomModal
-                                        isOpen={isZoomed}
-                                        onClose={() => {
-                                            console.log('Zoom modal closing');
-                                            setIsZoomed(false);
+                            ))
+                        }
+                    </Masonry>
+                </ResponsiveMasonry>
+                <Modal
+                    isOpen={state.viewerIsOpen}
+                    onRequestClose={closeModal}
+                    shouldCloseOnEsc
+                    // https://github.com/reactjs/react-modal/issues/279
+                    // sadly Modal will return to top of page after closing
+
+                    style={{
+                        overlay: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.3)'
+                        },
+                        content: {
+                            inset: '10px',
+                            padding: '10px',
+                            backgroundColor: 'rgba(0, 0, 0, 1)',
+                        }
+                    }}
+                >
+                    <div
+                        className="has-text-text"
+                        style={{
+                            position: 'absolute',
+                            top: '15px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            zIndex: 100,
+                            color: 'white',
+                            fontSize: '16px',
+                            fontWeight: 'bold',
+                            textShadow: '0 1px 3px rgba(0,0,0,0.8)'
+                        }}
+                    >
+                        {currentIndex + 1} / {album.photos.length}
+                    </div>
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: '15px',
+                            right: '15px',
+                            zIndex: 100,
+                            display: 'flex',
+                            gap: '12px',
+                            alignItems: 'center'
+                        }}
+                    >
+                        <Button
+                            text
+                            onClick={() =>
+                                saveAs(
+                                    album.photos[currentIndex].imageFile!.childImageSharp!.original.images.fallback!.src,
+                                    album.photos[currentIndex].slug
+                                )
+                            }
+                        >
+                            <FaDownload size="0.875em" className="inverted-icon" />
+                        </Button>
+
+                        {enable_photo_info_page && (
+                            <Button
+                                text
+                                id="infoModal"
+                                onClick={() =>
+                                    navigate("/albums/" + album.slug + "/" + album.photos[currentIndex].slug, { replace: true })
+                                }
+                            >
+                                <FaCircleInfo size="0.875em" className="inverted-icon" />
+                            </Button>
+                        )}
+
+                        <Button
+                            text
+                            onClick={closeModal}
+                        >
+                            <FaTimes size="0.875em" className="inverted-icon" />
+                        </Button>
+                    </div>
+
+
+                    <Swiper
+                        slidesPerView={1}
+                        navigation={{
+                            enabled: true,
+                        }}
+                        keyboard={{ enabled: true, }}
+                        pagination={{ clickable: true, }}
+                        hashNavigation={{
+                            watchState: true,
+                            replaceState: true,
+                        }}
+                        onSlideChange={(swiper) => {
+                            setCurrentIndex(swiper.activeIndex);
+                        }}
+                        modules={[Navigation, Keyboard, HashNavigation, Pagination]}
+                        className="swiper"
+                    >
+                        {
+                            album.photos.map((image, index) => (
+                                <SwiperSlide key={image.slug} data-hash={image.slug}>
+                                    <div
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            console.log('Image clicked, setting zoom to true');
+                                            setIsZoomed(true);
                                         }}
-                                        image={image.imageFile!.childImageSharp!.original!}
-                                        alt={image.path}
-                                    />
-                                )}
-                            </SwiperSlide>
-                        ))
-                    }
-                </Swiper>
-            </Modal>
+                                        style={{
+                                            cursor: 'zoom-in',
+                                            height: '100%',
+                                            width: '100%',
+                                        }}
+                                    >
+                                        <GatsbyImage
+                                            objectFit="contain"
+                                            className="gallery-image"
+                                            image={image.imageFile!.childImageSharp!.large}
+                                            alt={image.path}
+                                            loading="lazy"
+                                            style={{
+                                                userSelect: 'none',
+                                                WebkitUserSelect: 'none',
+                                                MozUserSelect: 'none',
+                                                msUserSelect: 'none',
+                                                pointerEvents: 'none'
+                                            }}
+                                        />
+                                    </div>
+                                    {index === currentIndex && (
+                                        <ZoomModal
+                                            isOpen={isZoomed}
+                                            onClose={() => {
+                                                console.log('Zoom modal closing');
+                                                setIsZoomed(false);
+                                            }}
+                                            image={image.imageFile!.childImageSharp!.original!}
+                                            alt={image.path}
+                                        />
+                                    )}
+                                </SwiperSlide>
+                            ))
+                        }
+                    </Swiper>
+                </Modal>
+            </Container>
         </Layout >
     )
 }

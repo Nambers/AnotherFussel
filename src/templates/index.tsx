@@ -43,7 +43,7 @@ const IndexPage: React.FC<PageProps<Queries.IndexPageQueryQuery>> = ({ data }) =
 
   return (
     <Layout>
-      <Container>
+      <Container style={{ flex: 1 }}>
         <Hero size="small">
           <Hero.Body>
             <Breadcrumb>

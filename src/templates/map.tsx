@@ -86,58 +86,9 @@ const MapPage: React.FC<PageProps<object, { locDicts: { [slug: string]: { name: 
             });
     });
 
-    // React.useEffect(() => {
-    //     if (mapRef.current && !mapInstance.current) {
-    //         const options: MapOptions = {
-    //             center: latLng(20, 0),
-    //             zoom: 1,
-    //             minZoom: 1,
-    //         };
-
-    //         mapInstance.current = map(mapRef.current, options);
-
-    //         tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    //             maxZoom: 19,
-    //             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    //         }).addTo(mapInstance.current);
-
-    //         mapInstance.current.setMaxBounds([
-    //             [-85, -180],
-    //             [85, 180]
-    //         ]);
-
-    //         // Add markers for each location
-    //         allLocs.forEach((loc: [string, string, Set<string>]) => {
-    //             const [lat, lng, names] = loc;
-    //             marker([Number(lat), Number(lng)]).addTo(mapInstance.current)
-    //                 .bindPopup(Array.from(names).map(slug => `<a href="/albums/${slug}">${pageContext.locDicts[slug].name}</a>`).join("<br/>"));
-    //         });
-    //     }
-
-    //     // Cleanup function
-    //     return () => {
-    //         if (mapInstance.current) {
-    //             mapInstance.current.remove();
-    //             mapInstance.current = null;
-    //         }
-    //     };
-    // }, []);
     return (
         <Layout>
-            <Container style={{ padding: "1.5em", width: "100%", margin: "0 auto" }}>
-                {/* <div
-                    ref={mapRef}
-                    style={{
-                        width: "100%",
-                        height: "50vh",
-                        minHeight: "300px",
-                        margin: "0 auto",
-                        display: "block",
-                        boxSizing: "border-box",
-                        boxShadow: "0 8px 24px rgba(0,0,0,0.15), 0 -8px 24px rgba(0,0,0,0.10) inset",
-                        background: "linear-gradient(180deg, #e3eafc 0%, #fff 100%)"
-                    }}
-                /> */}
+            <Container style={{ padding: "1.5em", width: "100%", margin: "0 auto", flex: 1 }}>
                 <MapContainer style={{ width: "100%", height: "50vh", minHeight: "400px" }} center={[20, 0]} zoom={1} scrollWheelZoom={true}>
                     <TileLayer
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

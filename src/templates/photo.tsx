@@ -39,7 +39,7 @@ const PhotoPage: React.FC<PageProps<object, { album_slug: string, album: string,
 
     return (
         <Layout>
-            <Container>
+            <Container style={{ flex: 1 }}>
                 <Hero size="small">
                     <Hero.Body style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <Breadcrumb style={{ marginBottom: "0" }}>

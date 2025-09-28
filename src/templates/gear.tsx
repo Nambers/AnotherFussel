@@ -50,7 +50,7 @@ const GearPage: React.FC<PageProps<object, GearPageContext>> = ({ pageContext })
 
     return (
         <Layout>
-            <Container style={{ padding: "1.5em", width: "100%", margin: "0 auto" }}>
+            <Container style={{ padding: "1.5em", width: "100%", margin: "0 auto", flex: 1 }}>
                 <Hero size="small">
                     <Hero.Body>
                         <Breadcrumb>
