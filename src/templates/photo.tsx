@@ -51,7 +51,7 @@ const PhotoPage: React.FC<PageProps<object, { album_slug: string, album: string,
                                 <Heading size={5} renderAs={Link} to={"/albums/" + album_slug}>{album}</Heading>
                             </Breadcrumb.Item>
                             <Breadcrumb.Item active>
-                                <Heading size={5} textColor="black" renderAs='a'>{photo.slug}</Heading>
+                                <Heading size={5} textColor="black" renderAs='a' className="has-text-text">{photo.slug}</Heading>
                             </Breadcrumb.Item>
                         </Breadcrumb>
                         <Button
@@ -63,7 +63,7 @@ const PhotoPage: React.FC<PageProps<object, { album_slug: string, album: string,
                                 )
                             }
                         >
-                            <FaDownload size="0.875em" className="inverted-icon" />
+                            <FaDownload size="0.875em" />
                         </Button>
                     </Hero.Body>
                 </Hero>
