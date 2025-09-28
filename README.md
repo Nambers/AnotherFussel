@@ -11,7 +11,7 @@
 
 ## What is this
 
-This work is largely inspired ny Chris Benninger([cbenning](https://github.com/cbenning))'s project [Fuseel](https://github.com/cbenning/fussel) written in Python and React, published under MIT License.  
+This work is largely inspired by Chris Benninger([cbenning](https://github.com/cbenning))'s project [Fuseel](https://github.com/cbenning/fussel) written in Python and React, published under MIT License.  
 I rewrote it in TypeScript with Gatsby.  
 
 ## How to use
