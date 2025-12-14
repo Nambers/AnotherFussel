@@ -1,0 +1,32 @@
+{
+  "name": "another-fussel",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "A static photo gallery generator",
+  "author": "Eritque Arcus",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/react": "^4.4.2",
+    "@iconify-json/fa6-brands": "^1.2.6",
+    "@iconify-json/fa6-regular": "^1.2.4",
+    "@iconify-json/fa6-solid": "^1.2.4",
+    "@nanostores/persistent": "^1.2.0",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "astro": "6.0.0-alpha.1",
+    "astro-icon": "^1.1.5",
+    "bulma": "^1.0.4",
+    "exifr": "^7.1.3",
+    "nanostores": "^1.1.0",
+    "react": "^19.2.3",
+    "react-bulma-components": "^4.1.0",
+    "react-dom": "^19.2.3",
+    "sharp": "^0.34.5",
+    "slugify": "^1.6.6"
+  }
+}

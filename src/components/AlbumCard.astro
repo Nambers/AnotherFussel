@@ -1,0 +1,42 @@
+---
+import { Heading, Columns, Card } from "react-bulma-components";
+import type { AlbumData } from "../types.ts";
+import { Image, Picture } from "astro:assets";
+
+const { subject } = Astro.props as { subject: AlbumData };
+const coverStyle =
+    subject.coverFile.width > subject.coverFile.height
+        ? { height: "100%", width: "auto" }
+        : { width: "100%", height: "auto" };
+---
+
+<Columns.Column
+    size="one-quarter"
+    key={subject.slug}
+    renderAs="a"
+    href={"/albums/" + subject.slug}
+>
+    <Card>
+        <Card.Content style={{ padding: 0, overflow: "hidden" }}>
+            <figure class="image is-4by3">
+                <Picture
+                    src={subject.coverFile}
+                    alt={subject.name}
+                    formats={["avif"]}
+                    fit="cover"
+                    position="center"
+                    layout="constrained"
+                    style={coverStyle}
+                    width={400}
+                    height={300}
+                />
+            </figure>
+        </Card.Content>
+        <Card.Content>
+            <Heading size={5}>{subject.name}</Heading>
+            <Heading subtitle size={6}>
+                {subject.size} Photo{subject.size === 1 ? "" : "s"}
+            </Heading>
+        </Card.Content>
+    </Card>
+</Columns.Column>

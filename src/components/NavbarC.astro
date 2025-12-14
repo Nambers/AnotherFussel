@@ -1,0 +1,95 @@
+---
+import { Navbar } from "react-bulma-components";
+import {
+    flatten_index,
+    enable_map_page,
+    enable_gear_page,
+} from "../config.tsx";
+import { Image } from "astro:assets";
+import logo from "../assets/icon.png";
+import { Icon } from "astro-icon/components";
+---
+
+<Navbar className="has-shadow" style={{ display: "flex" }}>
+    <Navbar.Brand>
+        <Navbar.Item renderAs="div">
+            <Image src={logo} alt="icon" width={32} height={32} />
+        </Navbar.Item>
+    </Navbar.Brand>
+    <Navbar.Menu className="is-active" style={{ display: "flex" }} shadowless>
+        <Navbar.Item renderAs="a" href="/">
+            <Icon
+                name={flatten_index ? "fa6-solid:photo-film" : "fa6-solid:book"}
+                size="1.2em"
+            />
+            <span style={{ fontWeight: "bold", paddingLeft: "0.2em" }}>
+                {flatten_index ? "Photos" : "Albums"}
+            </span>
+        </Navbar.Item>
+        {
+            enable_map_page && (
+                <Navbar.Item renderAs="a" href="/map">
+                    <Icon name="fa6-solid:map" />
+                    <span style={{ fontWeight: "bold", paddingLeft: "0.2em" }}>
+                        Map
+                    </span>
+                </Navbar.Item>
+            )
+        }
+        {
+            enable_gear_page && (
+                <Navbar.Item renderAs="a" href="/gear">
+                    <Icon name="fa6-solid:book" />
+                    <span style={{ fontWeight: "bold", paddingLeft: "0.2em" }}>
+                        Gear
+                    </span>
+                </Navbar.Item>
+            )
+        }
+        <Navbar.Item
+            id="theme-toggle-button"
+            renderAs="button"
+            style={{ cursor: "pointer", margin: "auto 1rem auto auto" }}
+            client:load
+        >
+            <Icon id="theme-icon-light" name="fa6-solid:moon" size="1em" />
+            <Icon id="theme-icon-dark" name="fa6-solid:lightbulb" size="1em" />
+        </Navbar.Item>
+        <script is:inline>
+            const theme = localStorage.getItem("theme");
+
+            if (theme === "yes") {
+                document.documentElement.dataset.theme = "dark";
+                document.getElementById("theme-icon-dark").style.display =
+                    "block";
+                document.getElementById("theme-icon-light").style.display =
+                    "none";
+            } else {
+                document.documentElement.dataset.theme = "light";
+                document.getElementById("theme-icon-light").style.display =
+                    "block";
+                document.getElementById("theme-icon-dark").style.display =
+                    "none";
+            }
+        </script>
+    </Navbar.Menu>
+</Navbar>
+
+<script>
+    import { theme } from "../store.ts";
+    const setTheme = (newTheme: boolean) => {
+        if (newTheme) {
+            document.getElementById("theme-icon-dark")!.style.display = "block";
+            document.getElementById("theme-icon-light")!.style.display = "none";
+            document.documentElement.dataset.theme = "dark";
+        } else {
+            document.getElementById("theme-icon-dark")!.style.display = "none";
+            document.getElementById("theme-icon-light")!.style.display =
+                "block";
+            document.documentElement.dataset.theme = "light";
+        }
+        theme.set(newTheme);
+    };
+    const button = document.getElementById("theme-toggle-button")!;
+    button.addEventListener("click", () => setTheme(!theme.get()));
+</script>

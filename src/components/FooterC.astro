@@ -1,0 +1,37 @@
+---
+import { Footer, Content } from "react-bulma-components";
+import { Icon } from "astro-icon/components";
+import { getCollection } from "astro:content";
+import { flatten_index } from "../config.tsx";
+const albumCount = getCollection("albums").then((albums) => albums.length);
+const photoCount = getCollection("photos").then((photos) => photos.length);
+---
+
+<Footer style={{ flex: 1 }}>
+    <Content textAlign="center">
+        <p>
+            All works made by&nbsp;<a href="https://ikuyo.dev/about"
+                ><strong>Eritque arcus</strong></a
+            >&nbsp;and licensed under&nbsp;<a
+                href="https://creativecommons.org/licenses/by-sa/4.0/"
+                >CC BY-SA 4.0</a
+            >&nbsp;<Icon name="fa6-brands:creative-commons" />&nbsp;<Icon
+                name="fa6-brands:creative-commons-by"
+            />&nbsp;<Icon name="fa6-brands:creative-commons-sa" />
+        </p>
+        <p>
+            Powered by <strong
+                ><a href="https://github.com/Nambers/AnotherFussel"
+                    >AnotherFussel</a
+                ></strong
+            >. {
+                flatten_index
+                    ? (await photoCount) + " photos"
+                    : (await albumCount) +
+                      " albums and " +
+                      (await photoCount) +
+                      " photos"
+            }
+        </p>
+    </Content>
+</Footer>

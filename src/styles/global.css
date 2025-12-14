@@ -1,0 +1,7 @@
+@import "bulma/css/bulma.css";
+/* a fallback max-width for container so that we can have small gaps */
+@media screen and (max-width: 1024px) {
+    .container {
+        max-width: 95vw;
+    }
+}

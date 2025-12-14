@@ -1,0 +1,23 @@
+---
+import "../styles/global.css";
+import FooterC from "../components/FooterC.astro";
+import HeaderC from "../components/HeaderC.astro";
+import NavbarC from "../components/NavbarC.astro";
+import { theme } from "../store.ts";
+---
+
+<!doctype html>
+<html lang="en" data-theme={theme.get() ? "dark" : "light"}>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/icon.png" />
+		<meta name="generator" content={Astro.generator} />
+		<HeaderC />
+	</head>
+	<body>
+		<NavbarC />
+		<slot />
+		<FooterC />
+	</body>
+</html>
