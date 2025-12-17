@@ -76,7 +76,7 @@ switch ((photo.exif["Make"] as string | undefined)?.toLowerCase() ?? "") {
                         <Heading
                             size={5}
                             renderAs="a"
-                            href={"/albums/" + album_slug}>{album.name}</Heading
+                            href={"/albums/" + album_slug + "/"}>{album.name}</Heading
                         >
                     </Breadcrumb.Item>
                     <Breadcrumb.Item active>

@@ -29,7 +29,7 @@ import { Icon } from "astro-icon/components";
         </Navbar.Item>
         {
             enable_map_page && (
-                <Navbar.Item renderAs="a" href="/map">
+                <Navbar.Item renderAs="a" href="/map/">
                     <Icon name="fa6-solid:map" />
                     <span style={{ fontWeight: "bold", paddingLeft: "0.2em" }}>
                         Map
@@ -39,7 +39,7 @@ import { Icon } from "astro-icon/components";
         }
         {
             enable_gear_page && (
-                <Navbar.Item renderAs="a" href="/gear">
+                <Navbar.Item renderAs="a" href="/gear/">
                     <Icon name="fa6-solid:book" />
                     <span style={{ fontWeight: "bold", paddingLeft: "0.2em" }}>
                         Gear
