@@ -17,12 +17,8 @@
     "@iconify-json/fa6-solid": "^1.2.4",
     "@iconify-json/simple-icons": "^1.2.63",
     "@nanostores/persistent": "^1.2.0",
-    "@nanostores/preact": "^1.0.0",
-    "@nanostores/react": "^1.0.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "@types/react-modal": "^3.16.3",
-    "@types/react-responsive-masonry": "^2.7.0",
     "astro": "5.16.6",
     "astro-icon": "^1.1.5",
     "astro-masonry": "^1.2.2",
@@ -32,8 +28,6 @@
     "react": "^19.2.3",
     "react-bulma-components": "^4.1.0",
     "react-dom": "^19.2.3",
-    "react-modal": "^3.16.3",
-    "react-responsive-masonry": "^2.7.1",
     "sharp": "^0.34.5",
     "slugify": "^1.6.6"
   }
