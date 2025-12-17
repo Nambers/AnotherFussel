@@ -1,4 +1,5 @@
 ---
+import "../styles/navbar.css";
 import { Navbar } from "react-bulma-components";
 import {
     flatten_index,
@@ -50,7 +51,6 @@ import { Icon } from "astro-icon/components";
             id="theme-toggle-button"
             renderAs="button"
             style={{ cursor: "pointer", margin: "auto 1rem auto auto" }}
-            client:load
         >
             <Icon id="theme-icon-light" name="fa6-solid:moon" size="1em" />
             <Icon id="theme-icon-dark" name="fa6-solid:lightbulb" size="1em" />

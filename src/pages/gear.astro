@@ -1,0 +1,260 @@
+---
+import {
+    Container,
+    Hero,
+    Breadcrumb,
+    Heading,
+    Columns,
+    Card,
+    Tag,
+} from "react-bulma-components";
+import { Icon } from "astro-icon/components";
+import { gears } from "../config";
+import Layout from "../layouts/Layout.astro";
+
+function getBrandIcon(make: string | undefined): string | null {
+    switch (make?.toLowerCase() ?? "") {
+        case "nikon":
+            return "simple-icons:nikon";
+        case "sony":
+            return "simple-icons:sony";
+        case "fujifilm":
+            return "simple-icons:fujifilm";
+        default:
+            return null;
+    }
+}
+---
+
+<Layout>
+    <Container
+        style={{ padding: "1.5em", width: "100%", margin: "0 auto", flex: 1 }}
+    >
+        <Hero size="small">
+            <Hero.Body>
+                <Breadcrumb>
+                    <Breadcrumb.Item>
+                        <Icon name="fa6-solid:camera" size="1.33em" />
+                        <Heading
+                            size={5}
+                            className="has-text-text"
+                            style={{ marginLeft: "1em" }}
+                        >
+                            Equipment Collection
+                        </Heading>
+                    </Breadcrumb.Item>
+                </Breadcrumb>
+                <p class="subtitle has-text-grey">
+                    My photography equipment collection and specifications
+                </p>
+            </Hero.Body>
+        </Hero>
+
+        {/* Equipment Collection */}
+        <div style={{ marginBottom: "3rem" }}>
+            <Columns>
+                {/* Cameras */}
+                <Columns.Column>
+                    <Card
+                        style={{
+                            backgroundColor: "var(--card-bg)",
+                            height: "100%",
+                        }}
+                    >
+                        <Card.Header>
+                            <Card.Header.Title className="has-text-text">
+                                <Icon name="fa6-solid:camera" class="mr-2" />
+                                Cameras
+                            </Card.Header.Title>
+                        </Card.Header>
+                        <Card.Content>
+                            {
+                                gears.cameras.map((camera) => (
+                                    <div
+                                        style={{
+                                            marginBottom: "1.5rem",
+                                            padding: "1rem",
+                                            backgroundColor:
+                                                "var(--bulma-scheme-main-bis)",
+                                            borderRadius: "6px",
+                                            border: camera.Gone
+                                                ? "1px solid var(--bulma-border)"
+                                                : "1px solid var(--primary)",
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                marginBottom: "0.75rem",
+                                            }}
+                                        >
+                                            {getBrandIcon(camera.Brand) && (
+                                                <Icon
+                                                    name={
+                                                        getBrandIcon(
+                                                            camera.Brand,
+                                                        )!
+                                                    }
+                                                    class="mr-2"
+                                                />
+                                            )}
+                                            <div style={{ flex: 1 }}>
+                                                <Heading
+                                                    size={5}
+                                                    className={
+                                                        camera.Gone
+                                                            ? "has-text-grey"
+                                                            : "has-text-text"
+                                                    }
+                                                    style={{ margin: 0 }}
+                                                >
+                                                    {camera.Brand} {camera.Type}
+                                                </Heading>
+                                                <p
+                                                    class="has-text-grey"
+                                                    style={{ margin: 0 }}
+                                                >
+                                                    {camera.Focus}
+                                                </p>
+                                            </div>
+                                            {camera.Gone && (
+                                                <Tag
+                                                    color="light"
+                                                    textColor="grey"
+                                                    size="medium"
+                                                >
+                                                    GONE
+                                                </Tag>
+                                            )}
+                                        </div>
+                                        <div
+                                            style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                            }}
+                                        >
+                                            <Icon
+                                                name="fa6-solid:calendar"
+                                                class="has-text-grey mr-2"
+                                                style={{
+                                                    verticalAlign: "middle",
+                                                }}
+                                            />
+                                            <span class="has-text-grey">
+                                                {camera.Date}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))
+                            }
+                        </Card.Content>
+                    </Card>
+                </Columns.Column>
+
+                {/* Lenses */}
+                <Columns.Column>
+                    <Card
+                        style={{
+                            backgroundColor: "var(--card-bg)",
+                            height: "100%",
+                        }}
+                    >
+                        <Card.Header>
+                            <Card.Header.Title className="has-text-text">
+                                <Icon name="fa6-solid:eye" class="mr-2" />
+                                Lenses
+                            </Card.Header.Title>
+                        </Card.Header>
+                        <Card.Content>
+                            {
+                                gears.lens.map((len) => (
+                                    <div
+                                        style={{
+                                            marginBottom: "1.5rem",
+                                            padding: "1rem",
+                                            backgroundColor:
+                                                "var(--bulma-scheme-main-bis)",
+                                            borderRadius: "6px",
+                                            border: len.Gone
+                                                ? "1px solid var(--bulma-border)"
+                                                : "1px solid var(--primary)",
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                marginBottom: "0.75rem",
+                                            }}
+                                        >
+                                            {getBrandIcon(len.Brand) && (
+                                                <Icon
+                                                    name={
+                                                        getBrandIcon(len.Brand)!
+                                                    }
+                                                    class="mr-2"
+                                                />
+                                            )}
+                                            <div style={{ flex: 1 }}>
+                                                <Heading
+                                                    size={5}
+                                                    className={
+                                                        len.Gone
+                                                            ? "has-text-grey"
+                                                            : "has-text-text"
+                                                    }
+                                                    style={{ margin: 0 }}
+                                                >
+                                                    {len.Brand} {len.Type}{" "}
+                                                    {len.Focus}
+                                                </Heading>
+                                            </div>
+                                            {len.Gone && (
+                                                <Tag
+                                                    color="light"
+                                                    size="medium"
+                                                    textColor="grey"
+                                                >
+                                                    GONE
+                                                </Tag>
+                                            )}
+                                        </div>
+                                        <div style={{ marginBottom: "0.5rem" }}>
+                                            <Icon
+                                                name="fa6-solid:calendar"
+                                                class="has-text-grey mr-2"
+                                                style={{
+                                                    verticalAlign: "middle",
+                                                }}
+                                            />
+                                            <span class="has-text-grey">
+                                                {len.Date}
+                                            </span>
+                                        </div>
+                                        {len.SerialNum && (
+                                            <div
+                                                style={{
+                                                    marginBottom: "0.5rem",
+                                                }}
+                                            >
+                                                <span class="has-text-grey">
+                                                    S/N: {len.SerialNum}
+                                                </span>
+                                                {len.ProducedDate && (
+                                                    <span class="has-text-grey">
+                                                        , {len.ProducedDate}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
+                            }
+                        </Card.Content>
+                    </Card>
+                </Columns.Column>
+            </Columns>
+        </div>
+    </Container>
+</Layout>

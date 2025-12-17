@@ -1,0 +1,73 @@
+---
+import { Icon } from "astro-icon/components";
+---
+
+<div class="modal-overlay" hidden={true}>
+    <div class="modal-content">
+        <div class="button is-text inverted" id="modal-close-button">
+            <Icon name="fa6-solid:xmark" class="inverted" />
+        </div>
+
+        <slot />
+    </div>
+</div>
+
+<script>
+    import { isZoomed } from "../store.ts";
+
+    isZoomed.subscribe((value) => {
+        const modalOverlay = document.querySelector(".modal-overlay");
+        if (modalOverlay) {
+            if (value) {
+                modalOverlay.removeAttribute("hidden");
+            } else {
+                modalOverlay.setAttribute("hidden", "true");
+            }
+        }
+    });
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            isZoomed.set(false);
+        }
+    });
+    document
+        .getElementById("modal-close-button")!
+        .addEventListener("click", function () {
+            isZoomed.set(false);
+        });
+</script>
+
+<style>
+    .inverted {
+        filter: invert(1);
+        mix-blend-mode: difference;
+    }
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: rgba(0, 0, 0, 0.95);
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+    }
+
+    .modal-content {
+        width: 100%;
+        height: 100%;
+        inset: 0;
+        padding: 0;
+        border: none;
+        background: none;
+        overflow: hidden;
+    }
+
+    #modal-close-button {
+        position: absolute !important;
+        z-index: 100;
+        right: 15px;
+        top: 15px;
+    }
+</style>

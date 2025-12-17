@@ -5,13 +5,6 @@ Keep an eye on the ticket and maybe one day I can remove this */
     align-self: flex-start;
 }
 
-.modal-close-button {
-    position: absolute !important;
-    z-index: 100;
-    right: 15px;
-    top: 15px;
-}
-
 /*
 Sadly need several !important to override the default gatsby styles
 */

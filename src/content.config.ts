@@ -91,6 +91,7 @@ const photos = defineCollection({
     schema: ({ image }) => z.object({
         slug: z.string().min(1),
         name: z.string().min(1),
+        album_slug: z.string().min(1),
         exif: z.record(z.string(), z.any()),
         timestamp: z.number().min(0),
         path: image()
@@ -118,6 +119,7 @@ const photos = defineCollection({
                                     return {
                                         id: `${albumName}/${fileEntry.name}`,
                                         slug: slugify(fileEntry.name, { lower: true, strict: true }),
+                                        album_slug: slugify(albumName, { lower: true, strict: true }),
                                         name: fileEntry.name,
                                         path: `../src/assets/images/${albumName}/${fileEntry.name}`,
                                         exif: exifData,
@@ -129,6 +131,7 @@ const photos = defineCollection({
                                     return {
                                         id: `${albumName}/${fileEntry.name}`,
                                         slug: slugify(fileEntry.name, { lower: true, strict: true }),
+                                        album_slug: slugify(albumName, { lower: true, strict: true }),
                                         name: fileEntry.name,
                                         path: `../src/assets/images/${albumName}/${fileEntry.name}`,
                                         exif: {},

@@ -1,0 +1,168 @@
+---
+import "../../../styles/photo.css";
+import { Container, Hero, Breadcrumb, Heading } from "react-bulma-components";
+import Layout from "../../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+import { Icon } from "astro-icon/components";
+import type { AlbumData, PhotoData } from "../../../types.ts";
+import { Picture } from "astro:assets";
+import Modal from "../../../components/Modal.astro";
+import Draggable from "../../../components/Draggable.tsx";
+
+export async function getStaticPaths() {
+    const photos = await getCollection("photos");
+    return photos.map((photo) => ({
+        params: { slug: photo.data.slug, album_slug: photo.data.album_slug },
+    }));
+}
+
+const { slug, album_slug } = Astro.params;
+
+const albums = await getCollection(
+    "albums",
+    (entry) => entry.data.slug === album_slug,
+);
+if (albums.length === 0) {
+    throw new Error(`Album with slug "${album_slug}" not found.`);
+}
+const album = albums[0].data as AlbumData;
+const photos = await getCollection(
+    "photos",
+    (entry) => entry.data.slug === slug && entry.data.album_slug === album_slug,
+);
+if (photos.length === 0) {
+    throw new Error(
+        `Photo with slug "${slug}" in album "${album_slug}" not found.`,
+    );
+}
+const photo = photos[0].data as PhotoData;
+let brand_icon = null;
+switch ((photo.exif["Make"] as string | undefined)?.toLowerCase() ?? "") {
+    case "nikon":
+        brand_icon = "simple-icons:nikon";
+        break;
+    case "sony":
+        brand_icon = "simple-icons:sony";
+        break;
+    case "fujifilm":
+        brand_icon = "simple-icons:fujifilm";
+        break;
+    default:
+        brand_icon = null;
+}
+---
+
+<Layout>
+    <Container style={{ flex: 1 }}>
+        <Hero size="small">
+            <Hero.Body
+                style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                }}
+            >
+                <Breadcrumb style={{ marginBottom: "0" }}>
+                    <Breadcrumb.Item>
+                        <Icon name="fa6-solid:book" size="1.33em" />
+                        <Heading
+                            size={5}
+                            style={{ marginLeft: "1em" }}
+                            renderAs="a"
+                            href="/">Albums</Heading
+                        >
+                    </Breadcrumb.Item>
+                    <Breadcrumb.Item>
+                        <Heading
+                            size={5}
+                            renderAs="a"
+                            href={"/albums/" + album_slug}>{album.name}</Heading
+                        >
+                    </Breadcrumb.Item>
+                    <Breadcrumb.Item active>
+                        <Heading
+                            size={5}
+                            textColor="black"
+                            renderAs="a"
+                            className="has-text-text">{photo.slug}</Heading
+                        >
+                    </Breadcrumb.Item>
+                </Breadcrumb>
+                <a href={photo.path.src} download class="button is-text">
+                    <Icon name="fa6-solid:download" size="0.875em" />
+                </a>
+            </Hero.Body>
+        </Hero>
+        <div id="imageContainer">
+            <Modal>
+                <Draggable client:load>
+                    <Picture
+                        quality="max"
+                        src={photo.path}
+                        alt={photo.name}
+                        width={photo.path.width}
+                        height={photo.path.height}
+                        layout="fixed"
+                        fit="none"
+                        loading="lazy"
+                    />
+                </Draggable>
+            </Modal>
+            <Picture
+                style={{
+                    minWidth: "70vw",
+                    cursor: "zoom-in",
+                }}
+                quality="high"
+                src={photo.path}
+                alt={photo.name}
+                layout="full-width"
+                id="image"
+            />
+            <script>
+                import { isZoomed } from "../../../store.ts";
+                document.getElementById("image")!.onclick = function () {
+                    isZoomed.set(true);
+                };
+            </script>
+            <div id="infoContainer">
+                <div id="camera-info">
+                    {
+                        brand_icon != null && (
+                            <>
+                                <Icon name={brand_icon!} size="5em" />
+                                <span id="separator"> | </span>
+                            </>
+                        )
+                    }
+                    <div id="specs">
+                        {
+                            "Model" in photo.exif && (
+                                <div id="model" class="has-text-text">
+                                    {photo.exif["Model"] as String}
+                                </div>
+                            )
+                        }
+                        {
+                            "LensModel" in photo.exif && (
+                                <div id="len" class="has-text-text">
+                                    {photo.exif["LensModel"] as String}
+                                </div>
+                            )
+                        }
+                    </div>
+                </div>
+                <div id="photo-properties" class="has-text-text">
+                    {
+                        Object.entries(photo.exif).map((item, i) => (
+                            <>
+                                <b>{item[0]}:</b> {item[1] as String}
+                                <br />
+                            </>
+                        ))
+                    }
+                </div>
+            </div>
+        </div>
+    </Container>
+</Layout>

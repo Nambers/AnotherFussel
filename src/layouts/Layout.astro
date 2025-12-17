@@ -15,9 +15,11 @@ import { theme } from "../store.ts";
 		<meta name="generator" content={Astro.generator} />
 		<HeaderC />
 	</head>
-	<body>
+	<body style="min-height: 100vh; display: flex; flex-direction: column;">
 		<NavbarC />
-		<slot />
+		<main style="flex: 1; display: flex;">
+			<slot />
+		</main>
 		<FooterC />
 	</body>
 </html>

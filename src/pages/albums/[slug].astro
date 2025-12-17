@@ -1,0 +1,97 @@
+---
+import "../../styles/album.css";
+import { getCollection } from "astro:content";
+import { Container, Hero, Breadcrumb, Heading } from "react-bulma-components";
+import Layout from "../../layouts/Layout.astro";
+import { Icon } from "astro-icon/components";
+// import Masonry, { ResponsiveMasonry } from "react-responsive-masonry"
+// import Modal from "react-modal";
+import { Masonry } from "astro-masonry";
+import { Picture } from "astro:assets";
+
+export async function getStaticPaths() {
+    const albums = await getCollection("albums");
+    return albums.map((album) => ({
+        params: { slug: album.data.slug },
+    }));
+}
+
+const { slug } = Astro.params;
+const albums = await getCollection(
+    "albums",
+    (entry) => entry.data.slug === slug,
+);
+if (albums.length === 0) {
+    throw new Error(`Album with slug "${slug}" not found.`);
+}
+const album = albums[0].data;
+const photos = (
+    await getCollection("photos", (entry) => entry.data.album_slug === slug)
+).map((entry) => entry.data);
+---
+
+<Layout>
+    <Container style={{ flex: 1 }}>
+        <Hero size="small">
+            <Hero.Body>
+                <Breadcrumb>
+                    <Breadcrumb.Item>
+                        <Icon name="fa6-solid:book" size="1.33em" />
+                        <a
+                            class="title is-5"
+                            href="/"
+                            style={{ marginLeft: "1em" }}>Albums</a
+                        >
+                    </Breadcrumb.Item>
+                    <Breadcrumb.Item active>
+                        <Heading size={5} className="has-text-text" renderAs="a"
+                            >{album.name}</Heading
+                        >
+                    </Breadcrumb.Item>
+                </Breadcrumb>
+            </Hero.Body>
+        </Hero>
+
+        <Masonry
+            class="container astro-masonry-grid columns is-1"
+            breakpointCols={{
+                300: 1,
+                600: 2,
+                900: 3,
+                1200: 4,
+                1500: 5,
+                default: 5,
+            }}
+            columnClass="astro-masonry-grid_column column"
+        >
+            {
+                photos.map((image, i) => (
+                    <a
+                        class="masonry-images"
+                        data-index={i}
+                        href={"/albums/" + album.slug + "/" + image.slug}
+                        class="button is-text"
+                    >
+                        <Picture
+                            quality="high"
+                            src={image.path}
+                            alt={image.name}
+                            class="gallery-image w-full"
+                        />
+                    </a>
+                ))
+            }
+        </Masonry>
+
+        <script>
+            import { currentIndex } from "../../store.ts";
+            const buttons = document.querySelectorAll(".masonry-images");
+            buttons.forEach((button) => {
+                button.addEventListener("click", () => {
+                    const index = parseInt(button.getAttribute("data-index")!);
+                    currentIndex.set(index);
+                });
+            });
+        </script>
+    </Container>
+</Layout>
