@@ -9,7 +9,6 @@ export type PhotoData = {
     exif: ExifData
     slug: string
     path: ImageMetadata,
-    timestamp: number
 }
 
 export type AlbumData = {
@@ -18,6 +17,5 @@ export type AlbumData = {
     slug: string
     coverFile: ImageMetadata,
     size: number,
-    oldest_timestamp: number,
     locDict: { [key: string]: number }
 }

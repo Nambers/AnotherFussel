@@ -34,7 +34,7 @@ const albums = defineCollection({
         path: z.string().min(1),
         coverFile: image(),
         size: z.number().min(0),
-        oldest_timestamp: z.number().min(0),
+        sort_timestamp: z.number().min(0),
     }),
     loader: async () => {
         const entries = await fs.readdir(photosPath, { withFileTypes: true });
@@ -44,7 +44,7 @@ const albums = defineCollection({
 
         console.log(`Found ${folders.length} albums`);
 
-        const results = Promise.all(folders.map(async (folderName) => {
+        const results = await Promise.all(folders.map(async (folderName) => {
             const folderPath = `${photosPath}/${folderName}`;
             const files = await fs.readdir(folderPath, { withFileTypes: true });
 
@@ -63,9 +63,10 @@ const albums = defineCollection({
                     }
                 }
             }
-            const coverPath = photoNames[photoTimestamps.indexOf(Math.max(...photoTimestamps))];
+            const sort_timestamp = Math.max(...photoTimestamps);
+            const coverPath = photoNames[photoTimestamps.indexOf(sort_timestamp)];
 
-            console.log(`Processing album: ${folderName}, found ${photoTimestamps.length} photos, cover ${coverPath}`);
+            console.log(`Processing album: ${folderName}, found ${photoTimestamps.length} photos, cover ${coverPath}, sort_timestamp: ${sort_timestamp}`);
 
             return {
                 id: folderName,
@@ -74,11 +75,11 @@ const albums = defineCollection({
                 path: folderPath,
                 coverFile: coverPath,
                 size: photoTimestamps.length,
-                oldest_timestamp: Math.min(...photoTimestamps),
+                sort_timestamp: sort_timestamp,
             };
-        })).then(results => results.sort((a, b) => b.oldest_timestamp - a.oldest_timestamp));
+        }));
 
-        return await results;
+        return results.sort((a, b) => b.sort_timestamp - a.sort_timestamp);
     }
 });
 
@@ -93,7 +94,7 @@ const photos = defineCollection({
         name: z.string().min(1),
         album_slug: z.string().min(1),
         exif: z.record(z.string(), z.any()),
-        timestamp: z.number().min(0),
+        sort_timestamp: z.number().min(0),
         path: image()
     }),
     loader: async () => {
@@ -108,7 +109,7 @@ const photos = defineCollection({
                     const albumPath = `${photosPath}/${albumName}`;
                     const files = await fs.readdir(albumPath, { withFileTypes: true });
 
-                    return Promise.all(files.map(
+                    const res = await (Promise.all(files.map(
                         async (fileEntry) => {
                             if (fileEntry.isFile() || fileEntry.isSymbolicLink()) {
                                 const filePath = `${albumPath}/${fileEntry.name}`;
@@ -123,7 +124,7 @@ const photos = defineCollection({
                                         name: fileEntry.name,
                                         path: `../src/assets/images/${albumName}/${fileEntry.name}`,
                                         exif: exifData,
-                                        timestamp: get_date(exifData.DateTimeOriginal),
+                                        sort_timestamp: get_date(exifData.DateTimeOriginal),
                                         locString: locString
                                     };
                                 } catch (error) {
@@ -135,13 +136,14 @@ const photos = defineCollection({
                                         name: fileEntry.name,
                                         path: `../src/assets/images/${albumName}/${fileEntry.name}`,
                                         exif: {},
-                                        timestamp: 0,
+                                        sort_timestamp: 0,
                                         locString: "unknown"
                                     };
                                 }
                             }
                         }
-                    )).then((photos) => photos.filter((p) => p != undefined).sort((a, b) => b.timestamp - a.timestamp));
+                    )).then((photos) => photos.filter((p) => p != undefined)));
+                    return res.sort((a, b) => b.sort_timestamp - a.sort_timestamp);
                 }
                 return [];
             }
