@@ -82,16 +82,5 @@ const photos = (
                 ))
             }
         </Masonry>
-
-        <script>
-            import { currentIndex } from "../../store.ts";
-            const buttons = document.querySelectorAll(".masonry-images");
-            buttons.forEach((button) => {
-                button.addEventListener("click", () => {
-                    const index = parseInt(button.getAttribute("data-index")!);
-                    currentIndex.set(index);
-                });
-            });
-        </script>
     </Container>
 </Layout>
