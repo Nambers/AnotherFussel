@@ -59,8 +59,7 @@ const photos = (
                 600: 2,
                 900: 3,
                 1200: 4,
-                1500: 5,
-                default: 5,
+                default: 4,
             }}
             columnClass="astro-masonry-grid_column column"
         >
@@ -77,6 +76,7 @@ const photos = (
                             src={image.path}
                             alt={image.name}
                             class="gallery-image w-full"
+                            loading="eager"
                         />
                     </a>
                 ))
