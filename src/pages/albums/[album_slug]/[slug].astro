@@ -113,11 +113,12 @@ switch ((photo.exif["Make"] as string | undefined)?.toLowerCase() ?? "") {
                     minWidth: "70vw",
                     cursor: "zoom-in",
                 }}
-                quality="high"
+                quality="max"
                 src={photo.path}
                 alt={photo.name}
                 layout="full-width"
                 id="image"
+                loading="eager"
             />
             <script>
                 import { isZoomed } from "../../../store.ts";
