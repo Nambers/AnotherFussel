@@ -79,7 +79,7 @@ const albums = defineCollection({
             };
         }));
 
-        return results.sort((a, b) => b.sort_timestamp - a.sort_timestamp);
+        return results;
     }
 });
 

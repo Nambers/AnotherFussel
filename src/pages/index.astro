@@ -10,7 +10,9 @@ import { Icon } from "astro-icon/components";
 import AlbumCard from "../components/AlbumCard.astro";
 import Layout from "../layouts/Layout.astro";
 import { getCollection } from "astro:content";
-let all_albums = await getCollection("albums");
+let all_albums = (await getCollection("albums")).sort(
+	(a, b) => b.data.sort_timestamp - a.data.sort_timestamp,
+);
 ---
 
 <Layout>
