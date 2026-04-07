@@ -25,8 +25,14 @@ Sadly need several !important to override the default gatsby styles
 .gallery-image {
     width: 100%;
     height: 100%;
-    display: "block";
+    display: block;
     cursor: pointer;
+}
+
+.masonry-images {
+    display: block;
+    margin: 0 0 4px 0;
+    line-height: 0;
 }
 
 .footer {

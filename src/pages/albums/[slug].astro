@@ -66,17 +66,20 @@ const photos = (
             {
                 photos.map((image, i) => (
                     <a
-                        class="masonry-images"
                         data-index={i}
                         href={"/albums/" + album.slug + "/" + image.slug + "/"}
-                        class="button is-text"
+                        class="masonry-images"
                     >
                         <Picture
                             quality="mid"
                             src={image.path}
                             alt={image.name}
+                            formats={["webp"]}
+                            widths={[360, 720, 1080]}
+                            sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 25vw"
                             class="gallery-image w-full"
-                            loading="eager"
+                            loading="lazy"
+                            decoding="async"
                         />
                     </a>
                 ))
