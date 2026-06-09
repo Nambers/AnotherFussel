@@ -3,21 +3,38 @@ import { Footer, Content } from "react-bulma-components";
 import { Icon } from "astro-icon/components";
 import { getCollection } from "astro:content";
 import { flatten_index } from "../config.tsx";
-const albumCount = getCollection("albums").then((albums) => albums.length);
-const photoCount = getCollection("photos").then((photos) => photos.length);
+const photos = await getCollection("photos");
+const albumCount = (await getCollection("albums")).length;
+const photoCount = photos.length;
+
+const years = photos
+    .map((p) => p.data.sort_timestamp)
+    .filter((ts) => ts > 0)
+    .map((ts) => new Date(ts).getFullYear());
+const minYear = years.length ? Math.min(...years) : null;
+const maxYear = years.length ? Math.max(...years) : null;
+const yearRange =
+    minYear === null
+        ? ""
+        : minYear === maxYear
+          ? `${minYear}`
+          : `${minYear} - ${maxYear}`;
 ---
 
 <Footer style={{ marginTop: "2rem" }}>
     <Content textAlign="center">
         <p>
-            All works made by&nbsp;<a href="https://ikuyo.dev/about"
-                ><strong>Eritque arcus</strong></a
-            >&nbsp;and licensed under&nbsp;<a
+            ©&nbsp;<a
+                href="https://ikuyo.dev/about"><strong>Eritque arcus</strong></a
+            >{yearRange && ` ${yearRange}`}
+        </p>
+        <p>
+            All works licensed under&nbsp;<a
                 href="https://creativecommons.org/licenses/by-sa/4.0/"
                 >CC BY-SA 4.0</a
-            >&nbsp;<Icon name="fa6-brands:creative-commons" />&nbsp;<Icon
-                name="fa6-brands:creative-commons-by"
-            />&nbsp;<Icon name="fa6-brands:creative-commons-sa" />
+            >&nbsp;<Icon name="fa6-brands:creative-commons-by" />&nbsp;<Icon
+                name="fa6-brands:creative-commons-sa"
+            />
         </p>
         <p>
             Powered by <strong
@@ -26,11 +43,8 @@ const photoCount = getCollection("photos").then((photos) => photos.length);
                 ></strong
             >. {
                 flatten_index
-                    ? (await photoCount) + " photos"
-                    : (await albumCount) +
-                      " albums and " +
-                      (await photoCount) +
-                      " photos"
+                    ? photoCount + " photos"
+                    : albumCount + " albums and " + photoCount + " photos"
             }
         </p>
     </Content>
