@@ -74,6 +74,32 @@ Site-level config:
 - Album and photo sorting are based on `DateTimeOriginal` when available.
 - If EXIF parsing fails for a photo, it still gets included with fallback metadata.
 
+## Note: 10-bit / HDR AVIF sources need a system libvips
+
+Sharp's prebuilt binaries bundle libheif with the **aom** AV1 decoder, which cannot
+decode some AVIF streams (e.g. 10-bit / YUV 4:4:4 HDR exports). Such images fail to
+decode at build time, so Astro silently falls back to the original file
+(`Sharp could not optimize image ... Sharp doesn't support this format`) and emits the
+full-size source for every responsive width — i.e. no resizing/cropping.
+
+The fix is to make Sharp use a **system libvips** whose libheif has the **dav1d**
+decoder:
+
+1. Install system libvips (it pulls in libheif + dav1d), e.g. on Arch:
+   `sudo pacman -S libvips`
+2. `node-addon-api` and `node-gyp` are kept in `devDependencies` so Sharp can build
+   from source. On `pnpm install`, Sharp auto-detects the global libvips (when
+   `>= 8.17.3`) and compiles against it instead of downloading the aom-only prebuilt.
+
+Caveat: this ties the build to a system libvips. If libvips is missing at install
+time, Sharp silently reverts to the bundled aom build and the issue returns — so any
+other build machine / CI must install libvips first.
+
+Upstream tracking: replacing the bundled aom with dav1d (decoder) + rav1e/svt-av1
+(encoder) is proposed but not yet shipped — see
+[lovell/sharp-libvips#97](https://github.com/lovell/sharp-libvips/issues/97). Until
+that lands, all published `@img/sharp-libvips-*` prebuilts remain aom-only.
+
 ## Credits
 
 Inspired by Chris Benninger's project [fussel](https://github.com/cbenning/fussel), then rewritten in TypeScript for Gatsby, and now migrated to Astro.
