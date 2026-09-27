@@ -7,7 +7,7 @@ import { Icon } from "astro-icon/components";
 // import Masonry, { ResponsiveMasonry } from "react-responsive-masonry"
 // import Modal from "react-modal";
 import { Masonry } from "astro-masonry";
-import { Picture } from "astro:assets";
+import { Image } from "astro:assets";
 
 export async function getStaticPaths() {
     const albums = await getCollection("albums");
@@ -70,11 +70,12 @@ const photos = (
                         href={"/albums/" + album.slug + "/" + image.slug + "/"}
                         class="masonry-images"
                     >
-                        <Picture
+                        <Image
                             quality="mid"
                             src={image.path}
                             alt={image.name}
-                            formats={["webp"]}
+                            format="webp"
+                            width={Math.min(image.path.width, 1080)}
                             widths={[360, 720, 1080]}
                             sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 25vw"
                             class="gallery-image w-full"

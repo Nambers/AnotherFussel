@@ -5,7 +5,7 @@ import Layout from "../../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
 import { Icon } from "astro-icon/components";
 import type { AlbumData, PhotoData } from "../../../types.ts";
-import { Picture } from "astro:assets";
+import { Image } from "astro:assets";
 import Modal from "../../../components/Modal.astro";
 import Draggable from "../../../components/Draggable.tsx";
 
@@ -96,19 +96,16 @@ switch ((photo.exif["Make"] as string | undefined)?.toLowerCase() ?? "") {
         <div id="imageContainer">
             <Modal>
                 <Draggable client:load>
-                    <Picture
-                        quality="max"
-                        src={photo.path}
+                    <img
+                        src={photo.path.src}
                         alt={photo.name}
                         width={photo.path.width}
                         height={photo.path.height}
-                        layout="fixed"
-                        fit="none"
                         loading="lazy"
                     />
                 </Draggable>
             </Modal>
-            <Picture
+            <Image
                 style={{
                     minWidth: "70vw",
                     cursor: "zoom-in",
@@ -116,7 +113,10 @@ switch ((photo.exif["Make"] as string | undefined)?.toLowerCase() ?? "") {
                 quality="max"
                 src={photo.path}
                 alt={photo.name}
+                format="webp"
                 layout="full-width"
+                width={Math.min(photo.path.width, 2560)}
+                widths={[1080, 1668, 2560]}
                 id="image"
                 loading="eager"
             />

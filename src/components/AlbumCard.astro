@@ -1,7 +1,7 @@
 ---
 import { Heading, Columns, Card } from "react-bulma-components";
 import type { AlbumData } from "../types.ts";
-import { Picture } from "astro:assets";
+import { Image } from "astro:assets";
 
 const { subject } = Astro.props as { subject: AlbumData };
 const coverStyle =
@@ -19,14 +19,14 @@ const coverStyle =
     <Card>
         <Card.Content style={{ padding: 0, overflow: "hidden" }}>
             <figure class="image is-4by3">
-                <Picture
+                <Image
                     quality="mid"
                     src={subject.coverFile}
                     alt={subject.name}
-                    formats={["avif"]}
+                    format="avif"
                     fit="cover"
                     position="center"
-                    layout="constrained"
+                    densities={[1, 2]}
                     style={coverStyle}
                     width={400}
                     height={300}
