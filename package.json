@@ -33,7 +33,9 @@
   },
   "devDependencies": {
     "node-addon-api": "^8.9.2",
-    "node-gyp": "^13.0.2"
+    "node-gyp": "^13.0.2",
+    "topojson-client": "^3.1.0",
+    "world-atlas": "^2.0.2"
   },
   "packageManager": "pnpm@12.3.4"
 }

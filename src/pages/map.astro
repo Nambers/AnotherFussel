@@ -1,0 +1,550 @@
+---
+import "../styles/map.css";
+import { Container, Hero, Breadcrumb, Heading } from "react-bulma-components";
+import { Icon } from "astro-icon/components";
+import Layout from "../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+import { summarisePlaces } from "../lib/places.ts";
+import {
+    buildCountryPaths,
+    buildGraticule,
+    buildRoute,
+    buildOutline,
+    project,
+    MAP_WIDTH,
+    MAP_HEIGHT,
+} from "../lib/worldmap.ts";
+import { clusterPlaces, leanHeads } from "../lib/pinboard.ts";
+import type { ExifData } from "../types.ts";
+
+const countries = buildCountryPaths();
+const graticule = buildGraticule();
+const outline = buildOutline();
+
+const photos = await getCollection("photos");
+const summary = summarisePlaces(
+    photos.map((p) => ({
+        exif: p.data.exif as ExifData,
+        album_name: p.data.album_name,
+        name: p.data.name,
+        album_slug: p.data.album_slug,
+        sort_timestamp: p.data.sort_timestamp,
+    })),
+);
+
+/*
+ * Pin size follows an atlas's settlement symbols — a few fixed sizes rather than
+ * one scaled per photo count, which would turn the board into a bubble chart.
+ */
+const TIERS = [
+    { min: 25, r: 9, name: "25+" },
+    { min: 8, r: 7, name: "8–24" },
+    { min: 1, r: 5, name: "1–7" },
+];
+const tierFor = (count: number) => TIERS.find((t) => count >= t.min) ?? TIERS[TIERS.length - 1]!;
+
+const radius = (count: number) => tierFor(count).r;
+
+/*
+ * Places whose pins would overlap share one pin; see lib/pinboard.ts. The index
+ * below still lists every place on its own.
+ */
+const clusters = clusterPlaces(summary.places, radius);
+
+/*
+ * The thread runs in the order places were first photographed, so it traces the
+ * actual travel history rather than an arbitrary path between pins.
+ */
+const chronological = [...clusters].sort((a, b) => a.firstVisit - b.firstVisit);
+const route = buildRoute(chronological.map((c) => ({ lon: c.lon, lat: c.lat })));
+const order = new Map(chronological.map((c, i) => [c, i]));
+
+const round = (n: number) => Math.round(n * 100) / 100;
+
+/* Hover lettering: one line per place in the pin, the smallest folded into a last line. */
+const LINE = 21;
+const MAX_LINES = 4;
+
+/*
+ * A tack stuck in at an angle rather than a bead viewed from directly above:
+ * the needle's tip marks the actual place and the head leans away from it,
+ * which is what makes it read as a pin rather than a dot. Which way it leans is
+ * chosen so neighbouring heads don't overlap.
+ */
+const heads = leanHeads(
+    clusters.map((c) => ({ key: c.members[0]!.key, x: c.x, y: c.y, r: radius(c.count), count: c.count })),
+);
+const pins = clusters.map((cluster, i) => {
+    const { x, y } = cluster;
+    const r = radius(cluster.count);
+    const { hx, hy } = heads[i]!;
+
+    // Needle: a taper from the sharp tip at the place to the full width at the head.
+    const dx = hx - x;
+    const dy = hy - y;
+    const len = Math.hypot(dx, dy) || 1;
+    const px = -dy / len;
+    const py = dx / len;
+    const w = r * 0.17;
+    const needle =
+        `M${round(x)} ${round(y)}` +
+        `L${round(hx + px * w)} ${round(hy + py * w)}` +
+        `L${round(hx - px * w)} ${round(hy - py * w)}Z`;
+
+    const shown = cluster.lines.slice(0, MAX_LINES);
+    const rest = cluster.lines.slice(MAX_LINES);
+    const lines = shown.map((l) => `${l.label} · ${l.count}`);
+    if (rest.length) lines.push(`and ${rest.length} more · ${rest.reduce((a, l) => a + l.count, 0)}`);
+
+    // Labels sit above the head, flipping below near the top edge, and anchor
+    // inward near the left and right edges so they stay on the plate.
+    const top = Math.min(hy, y) - r - 10 - (lines.length - 1) * LINE;
+    const labelY = round(top < 20 ? Math.max(hy, y) + r + 22 : top);
+
+    return {
+        count: cluster.count,
+        // Positions in the index, so selecting the pin can mark its entries there.
+        rows: cluster.members.map((m) => summary.places.indexOf(m)).join(" "),
+        title: cluster.members
+            .map((m) => `${m.label} — ${m.count} photograph${m.count === 1 ? "" : "s"}`)
+            .join("\n"),
+        lines,
+        x: round(x),
+        y: round(y),
+        hx: round(hx),
+        hy: round(hy),
+        r,
+        needle,
+        step: order.get(cluster) ?? 0,
+        labelY,
+        labelAnchor: x < 110 ? "start" : x > MAP_WIDTH - 110 ? "end" : "middle",
+        labelX: round(x < 110 ? x + r + 5 : x > MAP_WIDTH - 110 ? x - r - 5 : hx),
+    };
+});
+
+const placedCount = summary.places.reduce((a, p) => a + p.count, 0);
+const countries_visited = new Set(summary.places.map((p) => p.key.split("/")[0])).size;
+
+// Dropped in the empty South Pacific, the way an atlas fills dead space.
+const [roseX, roseY] = project(-148, -30).map(round) as [number, number];
+const ROSE = 26;
+---
+
+<Layout>
+    <Container id="map-page" style={{ flex: 1 }}>
+        <Hero size="small">
+            <Hero.Body>
+                <Breadcrumb>
+                    <Breadcrumb.Item active>
+                        <Icon name="fa6-solid:map" size="1.33em" />
+                        <Heading
+                            size={5}
+                            className="has-text-text"
+                            style={{ marginLeft: "1em" }}
+                            renderAs="a">Map</Heading
+                        >
+                    </Breadcrumb.Item>
+                </Breadcrumb>
+            </Hero.Body>
+        </Hero>
+
+        {
+            pins.length === 0 ? (
+                <div class="notification">
+                    No photo carries a location yet. Tag them in your photo editor, or
+                    map album folders to places with <code>album_locations</code> in
+                    <code>src/config.tsx</code>.
+                </div>
+            ) : (
+                <>
+                    <figure id="atlas-plate">
+                        <header id="plate-cartouche">
+                            <h2>Where I&rsquo;ve Been</h2>
+                            <p>
+                                {placedCount} photographs &middot; {summary.places.length} places
+                                &middot; {countries_visited} countries
+                            </p>
+                        </header>
+
+                        <div id="plate-frame">
+                            {/*
+                              Two stacked layers on purpose. Everything that never moves — paper,
+                              graticule, 176 country outlines — lives in the base svg, and only the
+                              thread and pins animate, in the overlay. Kept in one svg instead, every
+                              animation frame re-rasterises all of that static path data, which on a
+                              wide window is slow enough to wedge the renderer outright.
+                            */}
+                            <svg
+                                class="plate-base"
+                                viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
+                                role="img"
+                                aria-label={`Map of where ${placedCount} photographs were taken, pinned and threaded in travel order`}
+                            >
+                                <defs>
+                                    {/*
+                                      Paper grain, generated once into a small tile and repeated.
+                                      Running feTurbulence across the whole plate instead re-derives
+                                      the noise for every pixel of a very wide plate; stitchTiles
+                                      keeps the tile seams invisible. It lives in the static layer,
+                                      so the blended layer is composited once rather than per frame.
+                                    */}
+                                    <filter id="grain" x="0" y="0" width="100%" height="100%">
+                                        <feTurbulence
+                                            type="fractalNoise"
+                                            baseFrequency="0.9"
+                                            numOctaves="3"
+                                            stitchTiles="stitch"
+                                        />
+                                        <feColorMatrix type="saturate" values="0" />
+                                    </filter>
+                                    <pattern
+                                        id="grain-tile"
+                                        width="128"
+                                        height="128"
+                                        patternUnits="userSpaceOnUse"
+                                    >
+                                        <rect width="128" height="128" filter="url(#grain)" />
+                                    </pattern>
+                                    {/*
+                                      Declared once and instanced with <use>, so the coastal
+                                      banding costs three references rather than three more copies
+                                      of 70kB of path data.
+                                    */}
+                                    <g id="land-shapes">
+                                        {countries.map((c) => (
+                                            <path d={c.d} />
+                                        ))}
+                                    </g>
+                                    <clipPath id="neatline-clip">
+                                        <path d={outline} />
+                                    </clipPath>
+                                    {/* Aged edges: the paper darkens away from the centre. */}
+                                    <radialGradient id="vignette" cx="50%" cy="50%" r="76%">
+                                        <stop offset="52%" class="vig-clear" />
+                                        <stop offset="100%" class="vig-edge" />
+                                    </radialGradient>
+                                </defs>
+
+                                {/* Parchment the map is printed on, beyond the neatline. */}
+                                <rect width={MAP_WIDTH} height={MAP_HEIGHT} class="plate-paper" />
+
+                                {/*
+                                  Equal Earth narrows towards the poles, so the sea is the
+                                  projection's own boundary rather than the viewBox rectangle.
+                                */}
+                                <path d={outline} class="plate-sea" />
+
+                                <g clip-path="url(#neatline-clip)">
+                                    <g class="plate-graticule">
+                                        {graticule.map((line) => (
+                                            <path
+                                                d={line.d}
+                                                class={line.equator ? "is-equator" : ""}
+                                            />
+                                        ))}
+                                    </g>
+
+                                    {/*
+                                      Coastal banding: wide faint strokes along every coast, the
+                                      inner half hidden under the land fill drawn over them. The
+                                      engraved ripple of an old chart.
+                                    */}
+                                    <use href="#land-shapes" class="coast-band band-3" />
+                                    <use href="#land-shapes" class="coast-band band-2" />
+                                    <use href="#land-shapes" class="coast-band band-1" />
+                                    <use href="#land-shapes" class="plate-land" />
+                                </g>
+
+                                <g class="plate-rose" transform={`translate(${roseX} ${roseY})`}>
+                                    <circle r={ROSE * 0.62} />
+                                    <circle r={ROSE * 0.42} />
+                                    {[0, 90, 180, 270].map((deg) => (
+                                        <path
+                                            d={`M0 ${-ROSE} L${ROSE * 0.17} 0 L0 ${ROSE * 0.17} L${-ROSE * 0.17} 0 Z`}
+                                            transform={`rotate(${deg})`}
+                                            class="rose-major"
+                                        />
+                                    ))}
+                                    {[45, 135, 225, 315].map((deg) => (
+                                        <path
+                                            d={`M0 ${-ROSE * 0.52} L${ROSE * 0.1} 0 L0 ${ROSE * 0.1} L${-ROSE * 0.1} 0 Z`}
+                                            transform={`rotate(${deg})`}
+                                            class="rose-minor"
+                                        />
+                                    ))}
+                                    <text y={-ROSE - 4}>N</text>
+                                </g>
+
+                                <path d={outline} class="plate-neatline" />
+                                <rect
+                                    width={MAP_WIDTH}
+                                    height={MAP_HEIGHT}
+                                    fill="url(#grain-tile)"
+                                    class="plate-grain"
+                                />
+                                <rect
+                                    width={MAP_WIDTH}
+                                    height={MAP_HEIGHT}
+                                    fill="url(#vignette)"
+                                    class="plate-vignette"
+                                />
+                            </svg>
+
+                            <svg
+                                class="plate-overlay"
+                                viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
+                            >
+                                <defs>
+                                    {/* Lit from upper-left, so the heads read as beads. */}
+                                    <radialGradient id="pin-bead" cx="34%" cy="30%" r="72%">
+                                        <stop offset="0%" class="bead-hi" />
+                                        <stop offset="55%" class="bead-mid" />
+                                        <stop offset="100%" class="bead-lo" />
+                                    </radialGradient>
+                                </defs>
+
+                                {/* The thread runs under the pins, as it would on a board. */}
+                                <g class="plate-thread">
+                                    {route.map((seg, i) => (
+                                        <g class="thread-seg" style={`--seg:${i}`}>
+                                            {seg.paths.map((p) => (
+                                                <path d={p.d} style={`--len:${p.len}`} />
+                                            ))}
+                                        </g>
+                                    ))}
+                                </g>
+
+                                <g class="plate-pins">
+                                    {/*
+                                      Smallest last, so where hit areas overlap in a crowd the
+                                      small pin stays clickable instead of sitting under a big one.
+                                    */}
+                                    {[...pins].sort((a, b) => b.count - a.count).map((m) => (
+                                        <g
+                                            class="plate-pin"
+                                            tabindex="0"
+                                            role="button"
+                                            aria-pressed="false"
+                                            data-rows={m.rows}
+                                            style={`--step:${m.step};--tip-x:${m.x}px;--tip-y:${m.y}px`}
+                                        >
+                                            <title>{m.title}</title>
+                                            {/* Generous invisible hit area over the head. */}
+                                            <circle cx={m.hx} cy={m.hy} r={16} class="pin-hit" />
+                                            <g class="pin-body">
+                                                {/*
+                                                  Flat ellipses rather than a blur filter: at this
+                                                  size the falloff is indistinguishable, and a
+                                                  filter region per pin is pure waste.
+                                                */}
+                                                <ellipse
+                                                    class="pin-cast"
+                                                    cx={round(m.hx + m.r * 1.15)}
+                                                    cy={round(m.hy + m.r * 1.0)}
+                                                    rx={round(m.r * 1.15)}
+                                                    ry={round(m.r * 0.6)}
+                                                    transform={`rotate(24 ${round(m.hx + m.r * 1.15)} ${round(m.hy + m.r * 1.0)})`}
+                                                />
+                                                {/* Where the needle enters the paper. */}
+                                                <ellipse
+                                                    class="pin-entry"
+                                                    cx={round(m.x + m.r * 0.22)}
+                                                    cy={round(m.y + m.r * 0.12)}
+                                                    rx={round(m.r * 0.34)}
+                                                    ry={round(m.r * 0.2)}
+                                                />
+                                                <path class="pin-needle" d={m.needle} />
+                                                <circle
+                                                    class="pin-halo"
+                                                    cx={m.hx}
+                                                    cy={m.hy}
+                                                    r={m.r}
+                                                />
+                                                <circle
+                                                    class="pin-head"
+                                                    cx={m.hx}
+                                                    cy={m.hy}
+                                                    r={m.r}
+                                                    fill="url(#pin-bead)"
+                                                />
+                                                <circle
+                                                    class="pin-gloss"
+                                                    cx={round(m.hx - m.r * 0.34)}
+                                                    cy={round(m.hy - m.r * 0.38)}
+                                                    r={round(m.r * 0.24)}
+                                                />
+                                            </g>
+                                            {/*
+                                              Map lettering, not a tooltip box: the paper-coloured
+                                              stroke under the glyphs keeps it legible over land.
+                                            */}
+                                            <text
+                                                class="pin-label"
+                                                x={m.labelX}
+                                                y={m.labelY}
+                                                text-anchor={m.labelAnchor}
+                                            >
+                                                {m.lines.map((line, k) => (
+                                                    <tspan x={m.labelX} dy={k === 0 ? 0 : LINE}>
+                                                        {line}
+                                                    </tspan>
+                                                ))}
+                                            </text>
+                                        </g>
+                                    ))}
+                                </g>
+                            </svg>
+                        </div>
+
+                        <figcaption id="plate-key">
+                            {TIERS.slice()
+                                .reverse()
+                                .map((t) => (
+                                    <span class="key-item">
+                                        <svg width={t.r * 2 + 4} height={t.r * 2 + 4}>
+                                            <circle
+                                                class="pin-head"
+                                                cx={t.r + 2}
+                                                cy={t.r + 2}
+                                                r={t.r}
+                                                fill="url(#pin-bead)"
+                                            />
+                                            <circle
+                                                class="pin-gloss"
+                                                cx={t.r + 2 - t.r * 0.3}
+                                                cy={t.r + 2 - t.r * 0.34}
+                                                r={t.r * 0.26}
+                                            />
+                                        </svg>
+                                        {t.name}
+                                    </span>
+                                ))}
+                            <span class="key-item">
+                                <svg width="34" height="8">
+                                    <path class="key-thread" d="M1 6 Q17 -3 33 6" />
+                                </svg>
+                                in travel order
+                            </span>
+                            <span class="key-note">photographs per place</span>
+                        </figcaption>
+                    </figure>
+
+                    <section id="gazetteer" data-open="false">
+                        <button
+                            id="gaz-toggle"
+                            type="button"
+                            aria-expanded="false"
+                            aria-controls="gaz-panel"
+                        >
+                            <span class="gaz-title">Index of Places</span>
+                            <span class="gaz-leader" aria-hidden="true" />
+                            <span class="gaz-meta">{summary.places.length} places</span>
+                            <span class="gaz-chevron" aria-hidden="true">
+                                <Icon name="fa6-solid:chevron-down" />
+                            </span>
+                        </button>
+                        <div class="gaz-panel" id="gaz-panel">
+                            <div class="gaz-clip">
+                                <ol>
+                                    {summary.places.map((place, i) => (
+                                        <li class="gaz-row" data-row={i} style={`--r:${i}`}>
+                                            <span class="gaz-name">
+                                                {place.label}
+                                                {place.detail && (
+                                                    <span class="gaz-detail">, {place.detail}</span>
+                                                )}
+                                            </span>
+                                            <span class="gaz-leader" aria-hidden="true" />
+                                            <span class="gaz-count">{place.count}</span>
+                                            <span class="gaz-albums">
+                                                {place.albums.map((a) => (
+                                                    <a href={`/albums/${a.slug}/`}>{a.name}</a>
+                                                ))}
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ol>
+                            </div>
+                        </div>
+                    </section>
+                </>
+            )
+        }
+
+        {
+            (summary.unplaced > 0 || summary.imprecise.length > 0) && (
+                <div id="plate-notes">
+                    <p>
+                        <Icon name="fa6-solid:circle-info" /> To refine this map, edit
+                        <code>src/config.tsx</code> — no need to re-tag photos.
+                    </p>
+                    <ul>
+                        {summary.unplaced > 0 && (
+                            <li>
+                                {summary.unplaced} photograph{summary.unplaced === 1 ? "" : "s"} have
+                                no location. Add their album folder to <code>album_locations</code>.
+                            </li>
+                        )}
+                        {summary.imprecise.map((m) => (
+                            <li>
+                                <code>{m.key}</code> ({m.count} photograph
+                                {m.count === 1 ? "" : "s"}) is drawn at {m.shownAs} because{" "}
+                                <code>place_coords</code> has no entry for it.
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )
+        }
+    </Container>
+</Layout>
+
+<script>
+    const gaz = document.getElementById("gazetteer");
+    const toggle = document.getElementById("gaz-toggle");
+    const panel = document.getElementById("gaz-panel");
+
+    if (gaz && toggle && panel) {
+        const setOpen = (open: boolean) => {
+            gaz.dataset.open = String(open);
+            toggle.setAttribute("aria-expanded", String(open));
+        };
+
+        toggle.addEventListener("click", () => setOpen(gaz.dataset.open !== "true"));
+
+        /*
+         * Selecting a pin marks its places in the index and opens it, without
+         * scrolling there: the map stays where the reader is looking. Selecting
+         * it again, or anywhere off the pins, clears the mark.
+         */
+        const rows = gaz.querySelectorAll<HTMLElement>(".gaz-row");
+        let selected: HTMLElement | null = null;
+
+        const select = (pin: HTMLElement | null) => {
+            selected?.removeAttribute("data-active");
+            selected?.setAttribute("aria-pressed", "false");
+            rows.forEach((row) => row.removeAttribute("data-active"));
+            selected = pin === selected ? null : pin;
+            if (!selected) return;
+            selected.dataset.active = "";
+            selected.setAttribute("aria-pressed", "true");
+            for (const i of (selected.dataset.rows ?? "").split(" ")) {
+                rows[Number(i)]?.setAttribute("data-active", "");
+            }
+            setOpen(true);
+        };
+
+        document.addEventListener("click", (e) => {
+            const pin = (e.target as Element).closest<HTMLElement>(".plate-pin");
+            if (pin) select(pin);
+            else if (!gaz.contains(e.target as Node)) select(null);
+        });
+        document.querySelectorAll<HTMLElement>(".plate-pin").forEach((pin) =>
+            pin.addEventListener("keydown", (e) => {
+                if (e.key !== "Enter" && e.key !== " ") return;
+                e.preventDefault();
+                select(pin);
+            }),
+        );
+    }
+</script>

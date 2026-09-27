@@ -1,0 +1,677 @@
+/*
+ * The map page is styled as an atlas plate: aged paper, a lat/lon graticule,
+ * fixed cartographic symbols, and a gazetteer index underneath.
+ *
+ * It deliberately keeps its own warm palette instead of inheriting Bulma's
+ * neutral scheme — that is the whole look — but it still answers to data-theme,
+ * with the dark variant reading as a night atlas rather than a lit page.
+ */
+#map-page {
+    --paper: hsl(41 46% 93%);
+    --paper-edge: hsl(38 34% 86%);
+    --sea: hsl(39 44% 91%);
+    --coast-band: hsl(30 30% 58%);
+    --vignette: hsl(28 40% 30%);
+    --vignette-strength: 0.34;
+    --needle: hsl(30 8% 62%);
+    --needle-edge: hsl(28 12% 42%);
+    --land: hsl(37 32% 83%);
+    --land-ink: hsl(28 26% 52%);
+    --graticule: hsl(28 22% 63%);
+    --ink: hsl(28 27% 26%);
+    --ink-soft: hsl(28 16% 45%);
+    --mark: hsl(6 56% 42%);
+    --pin-hi: hsl(6 72% 62%);
+    --pin-mid: hsl(6 62% 46%);
+    --pin-lo: hsl(6 58% 31%);
+    --pin-shadow: hsl(28 30% 22% / 0.45);
+    --thread: hsl(4 62% 47%);
+    --rule: hsl(30 20% 78%);
+    --grain-opacity: 0.055;
+}
+
+:root[data-theme="dark"] #map-page {
+    --paper: hsl(30 13% 12%);
+    --paper-edge: hsl(30 14% 17%);
+    --sea: hsl(30 13% 14%);
+    --coast-band: hsl(34 20% 40%);
+    --vignette: hsl(0 0% 0%);
+    --vignette-strength: 0.45;
+    --needle: hsl(30 8% 55%);
+    --needle-edge: hsl(28 10% 30%);
+    --land: hsl(32 15% 23%);
+    --land-ink: hsl(34 22% 45%);
+    --graticule: hsl(32 16% 31%);
+    --ink: hsl(38 26% 79%);
+    --ink-soft: hsl(36 14% 58%);
+    --mark: hsl(28 72% 57%);
+    --pin-hi: hsl(10 78% 66%);
+    --pin-mid: hsl(6 62% 50%);
+    --pin-lo: hsl(6 55% 32%);
+    --pin-shadow: hsl(0 0% 0% / 0.55);
+    --thread: hsl(6 66% 55%);
+    --rule: hsl(32 14% 30%);
+    --grain-opacity: 0.09;
+}
+
+#map-page {
+    --serif: Georgia, "Iowan Old Style", "Palatino Linotype", Palatino,
+        "Times New Roman", serif;
+}
+
+/* The plate ----------------------------------------------------------------- */
+
+#atlas-plate {
+    position: relative;
+    background: var(--paper);
+    /* Double rule: the engraved border an atlas plate carries. */
+    border: 1px solid var(--land-ink);
+    outline: 1px solid var(--land-ink);
+    outline-offset: 4px;
+    margin: 0 4px 3rem;
+    padding: 1.5rem 1.25rem 1rem;
+    color: var(--ink);
+    font-family: var(--serif);
+}
+
+/* Engraved corner brackets, the way a plate is ruled off. */
+#atlas-plate::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    pointer-events: none;
+    --bracket: linear-gradient(var(--land-ink), var(--land-ink));
+    background-image: var(--bracket), var(--bracket), var(--bracket), var(--bracket),
+        var(--bracket), var(--bracket), var(--bracket), var(--bracket);
+    background-repeat: no-repeat;
+    background-size:
+        16px 1px, 1px 16px, 16px 1px, 1px 16px,
+        16px 1px, 1px 16px, 16px 1px, 1px 16px;
+    background-position:
+        left top, left top, right top, right top,
+        left bottom, left bottom, right bottom, right bottom;
+}
+
+#plate-cartouche {
+    text-align: center;
+    margin-bottom: 1.25rem;
+}
+
+#plate-cartouche h2 {
+    font-family: var(--serif);
+    font-size: clamp(1.1rem, 2.4vw, 1.5rem);
+    font-weight: 400;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin: 0;
+}
+
+/* Hairlines flanking the title, stopping short of the text. */
+#plate-cartouche h2::before,
+#plate-cartouche h2::after {
+    content: "";
+    display: inline-block;
+    width: clamp(1rem, 6vw, 4rem);
+    height: 1px;
+    background: var(--land-ink);
+    vertical-align: 0.3em;
+    margin: 0 0.9em;
+}
+
+#plate-cartouche p {
+    margin: 0.5rem 0 0;
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+}
+
+#plate-frame {
+    border: 1px solid var(--land-ink);
+    /* The map is wide; never let it push the page into a horizontal scroll. */
+    overflow-x: auto;
+}
+
+/* The base sizes the frame; the overlay is laid exactly over it. */
+#plate-frame {
+    position: relative;
+}
+
+.plate-base,
+.plate-overlay {
+    display: block;
+    width: 100%;
+    min-width: 460px;
+}
+
+.plate-base {
+    height: auto;
+}
+
+.plate-overlay {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+}
+
+.plate-paper {
+    fill: var(--paper);
+}
+
+.plate-grain {
+    opacity: var(--grain-opacity);
+    mix-blend-mode: multiply;
+    pointer-events: none;
+}
+
+:root[data-theme="dark"] .plate-grain {
+    mix-blend-mode: screen;
+}
+
+.plate-graticule path {
+    fill: none;
+    stroke: var(--graticule);
+    stroke-width: 0.5;
+    opacity: 0.65;
+}
+
+.plate-graticule path.is-equator {
+    stroke-width: 0.9;
+    opacity: 0.9;
+}
+
+/* Styled on the <use>: fill and stroke inherit into the referenced shapes. */
+.plate-land {
+    fill: var(--land);
+    stroke: var(--land-ink);
+    stroke-width: 0.5;
+    stroke-linejoin: round;
+}
+
+.plate-sea {
+    fill: var(--sea);
+}
+
+.plate-neatline {
+    fill: none;
+    stroke: var(--land-ink);
+    stroke-width: 1.4;
+}
+
+.coast-band {
+    fill: none;
+    stroke: var(--coast-band);
+    stroke-linejoin: round;
+}
+
+/* Three bands, widest and faintest first; the land fill covers their inner
+   halves, leaving the ripple only on the seaward side. */
+.band-1 {
+    stroke-width: 2.6;
+    opacity: 0.36;
+}
+
+.band-2 {
+    stroke-width: 6.5;
+    opacity: 0.2;
+}
+
+.band-3 {
+    stroke-width: 11;
+    opacity: 0.11;
+}
+
+.vig-clear {
+    stop-color: var(--vignette);
+    stop-opacity: 0;
+}
+
+.vig-edge {
+    stop-color: var(--vignette);
+    stop-opacity: var(--vignette-strength);
+}
+
+.plate-vignette {
+    pointer-events: none;
+}
+
+/* Compass rose -------------------------------------------------------------- */
+
+.plate-rose {
+    opacity: 0.62;
+    pointer-events: none;
+}
+
+.plate-rose circle {
+    fill: none;
+    stroke: var(--land-ink);
+    stroke-width: 0.5;
+}
+
+.plate-rose .rose-major {
+    fill: var(--land-ink);
+}
+
+.plate-rose .rose-minor {
+    fill: none;
+    stroke: var(--land-ink);
+    stroke-width: 0.5;
+}
+
+.plate-rose text {
+    fill: var(--land-ink);
+    font-family: var(--serif);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-anchor: middle;
+}
+
+/* Pins and thread ----------------------------------------------------------- */
+
+.pin-hit {
+    fill: transparent;
+}
+
+.bead-hi {
+    stop-color: var(--pin-hi);
+}
+.bead-mid {
+    stop-color: var(--pin-mid);
+}
+.bead-lo {
+    stop-color: var(--pin-lo);
+}
+
+.pin-cast {
+    fill: var(--pin-shadow);
+    opacity: 0.5;
+}
+
+.pin-entry {
+    fill: var(--pin-shadow);
+    opacity: 0.65;
+}
+
+.pin-needle {
+    fill: var(--needle);
+    stroke: var(--needle-edge);
+    stroke-width: 0.4;
+    stroke-linejoin: round;
+}
+
+.pin-gloss {
+    fill: #fff;
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+/* Sits under the head and only shows while hovered, as an expanding ping. */
+.pin-halo {
+    fill: none;
+    stroke: var(--thread);
+    stroke-width: 1;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.plate-pin {
+    cursor: pointer;
+}
+
+/* Pivots on the needle tip, whichever way the pin leans. */
+.plate-pin .pin-body {
+    transform-box: view-box;
+    transform-origin: var(--tip-x) var(--tip-y);
+    transition: transform 0.18s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.plate-pin:hover .pin-body,
+.plate-pin:focus .pin-body,
+.plate-pin[data-active] .pin-body {
+    transform: scale(1.22);
+}
+
+.plate-pin:focus {
+    outline: none;
+}
+
+.plate-thread path {
+    fill: none;
+    stroke: var(--thread);
+    stroke-width: 1.3;
+    stroke-linecap: round;
+    opacity: 0.42;
+}
+
+.key-thread {
+    fill: none;
+    stroke: var(--thread);
+    stroke-width: 1.4;
+    opacity: 0.6;
+}
+
+/* Key ----------------------------------------------------------------------- */
+
+#plate-key {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.4rem;
+    margin-top: 0.9rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+}
+
+.key-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.key-note {
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    opacity: 0.75;
+}
+
+/* Gazetteer ----------------------------------------------------------------- */
+
+#gazetteer {
+    font-family: var(--serif);
+    /* Warm ink, not Bulma's cool grey: the index is part of the same document. */
+    color: var(--ink);
+    margin-bottom: 3rem;
+}
+
+#gaz-toggle {
+    display: flex;
+    align-items: baseline;
+    width: 100%;
+    gap: 0.6rem;
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--rule);
+    padding: 0 0.4rem 0.6rem;
+    margin: 0 0 0.25rem;
+    cursor: pointer;
+    font-family: var(--serif);
+    font-size: 0.78rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    transition: color 0.2s ease;
+}
+
+#gaz-toggle:hover {
+    color: var(--mark);
+}
+
+#gaz-toggle:hover .gaz-leader {
+    border-bottom-color: var(--mark);
+}
+
+.gaz-meta {
+    letter-spacing: 0.14em;
+    opacity: 0.8;
+    white-space: nowrap;
+}
+
+.gaz-chevron {
+    display: inline-flex;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#gazetteer[data-open="true"] .gaz-chevron {
+    transform: rotate(180deg);
+}
+
+/*
+ * 0fr -> 1fr animates to the content's natural height without measuring it.
+ * The :has() rule is the no-JS path: following a symbol's link to an entry
+ * opens the index on its own.
+ */
+.gaz-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gaz-clip {
+    overflow: hidden;
+}
+
+#gazetteer[data-open="true"] .gaz-panel {
+    grid-template-rows: 1fr;
+}
+
+#gazetteer ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.gaz-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    padding: 0.55rem 0.4rem;
+    transition:
+        background 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+/* The entries behind the selected pin. */
+.gaz-row[data-active] {
+    background: var(--paper-edge);
+    box-shadow: inset 2px 0 0 var(--mark);
+}
+
+.gaz-name {
+    font-size: 1.02rem;
+}
+
+.gaz-detail {
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 0.92em;
+}
+
+/* The dotted leader of a printed index. */
+.gaz-leader {
+    flex: 1 1 2rem;
+    min-width: 1.5rem;
+    margin: 0 0.6rem;
+    border-bottom: 1px dotted var(--rule);
+    transform: translateY(-0.25em);
+}
+
+.gaz-count {
+    font-variant-numeric: tabular-nums;
+    font-size: 1.02rem;
+}
+
+.gaz-albums {
+    flex-basis: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem 0.9rem;
+    margin-top: 0.2rem;
+    font-family: inherit;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+}
+
+.gaz-albums a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule);
+}
+
+.gaz-albums a:hover {
+    color: var(--mark);
+    border-bottom-color: var(--mark);
+}
+
+/* Notes --------------------------------------------------------------------- */
+
+#plate-notes {
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    margin-bottom: 2rem;
+}
+
+#plate-notes ul {
+    margin: 0.4rem 0 0 1.2rem;
+    list-style: disc;
+}
+
+#plate-notes code {
+    font-size: 0.9em;
+}
+
+@media screen and (max-width: 600px) {
+    #atlas-plate {
+        padding: 1.1rem 0.7rem 0.8rem;
+    }
+    #plate-cartouche h2::before,
+    #plate-cartouche h2::after {
+        display: none;
+    }
+}
+
+
+/* Motion --------------------------------------------------------------------
+ *
+ * The plate settles like ink on paper, then the trip replays: each pin drops in
+ * the order that place was first photographed and the thread draws itself to
+ * the next one. Everything here is decoration — the reduced-motion block at the
+ * end removes all of it without changing what ends up on screen.
+ */
+
+/* One beat per stop. 19 stops land in about two seconds. */
+#map-page {
+    --beat: 100ms;
+    --beat-start: 420ms;
+}
+
+@keyframes plate-ink {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes pin-drop {
+    from {
+        opacity: 0;
+        /* Swung in from above and settling upright, pivoting on the tip. */
+        transform: translate(1px, -13px) rotate(-14deg) scale(1.25);
+    }
+}
+
+@keyframes pin-halo {
+    from {
+        opacity: 0.5;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(2.6);
+    }
+}
+
+@keyframes thread-draw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes gaz-row-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+}
+
+.plate-land {
+    animation: plate-ink 0.8s ease both;
+}
+
+.plate-graticule,
+.plate-rose {
+    animation: plate-ink 1s ease 0.15s both;
+}
+
+.plate-pin .pin-body {
+    /* `backwards` keeps the pin off the board until its turn comes. */
+    animation: pin-drop 0.42s cubic-bezier(0.34, 1.3, 0.64, 1) backwards;
+    animation-delay: calc(var(--step, 0) * var(--beat) + var(--beat-start));
+}
+
+/* Each leg draws in the gap between the pin it leaves and the one it reaches. */
+.thread-seg path {
+    stroke-dasharray: var(--len);
+    stroke-dashoffset: var(--len);
+    animation: thread-draw calc(var(--beat) * 1.6) ease-out forwards;
+    animation-delay: calc(var(--seg, 0) * var(--beat) + var(--beat-start) + 120ms);
+}
+
+.plate-pin:hover .pin-halo,
+.plate-pin:focus .pin-halo {
+    animation: pin-halo 1.5s ease-out infinite;
+}
+
+/* Map lettering: the paper-coloured stroke sits under the glyphs. */
+.pin-label {
+    font-family: var(--serif);
+    font-size: 18px;
+    letter-spacing: 0.04em;
+    fill: var(--ink);
+    stroke: var(--paper);
+    stroke-width: 3.5;
+    paint-order: stroke;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(3px);
+    transition:
+        opacity 0.18s ease,
+        transform 0.18s ease;
+}
+
+.plate-pin:hover .pin-label,
+.plate-pin:focus .pin-label,
+.plate-pin[data-active] .pin-label {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#gazetteer[data-open="true"] .gaz-row {
+    animation: gaz-row-in 0.4s ease backwards;
+    animation-delay: calc(var(--r, 0) * 22ms + 130ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #map-page *,
+    #map-page *::before,
+    #map-page *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+    /*
+     * The thread is hidden by its own dash offset, so removing the animation
+     * would erase it. Put it back rather than leaving a blank board.
+     */
+    .thread-seg path {
+        stroke-dashoffset: 0;
+    }
+    /* The label is opacity-driven, so hover must still reveal it. */
+    .plate-pin:hover .pin-label,
+    .plate-pin:focus .pin-label,
+    .plate-pin[data-active] .pin-label {
+        opacity: 1;
+        transform: none;
+    }
+}

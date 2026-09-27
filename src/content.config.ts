@@ -17,9 +17,15 @@ export const exifr_options = {
     xmp: true,
     mergeOutput: true
 };
+// NOTE: kept byte-identical in src/config.tsx and src/content.config.ts.
+// The loaders use content.config.ts's copy; editing only config.tsx changes nothing.
+// "latitude"/"longitude" are exifr's decimal-degree values, already signed by the
+// GPS*Ref tags. The raw GPSLatitude/GPSLongitude tags are unusable here: they are
+// DMS arrays like [35, 40, 30.12] whose hemisphere lives in GPSLatitudeRef, which
+// this allowlist drops.
 const keys = new Set(["DateTimeOriginal", "Make", "Model", "LensModel", "FocalLength", "FNumber", "ExposureTime", "ISO",
     "Software", "Artist", "ImageDescription", "Copyright",
-    "City", "Country", "GPSLatitude", "GPSLongitude", "GPSAltitude", "State"]);
+    "City", "Country", "State", "latitude", "longitude", "GPSAltitude"]);
 
 export const exifr_filter = (exif: ExifData): ExifData => {
     return Object.fromEntries(Object.entries(exif).filter(([key,]) => keys.has(key))) as ExifData;
@@ -83,16 +89,15 @@ const albums = defineCollection({
     }
 });
 
-const build_loc = (exif: ExifData): string => {
-    // city,state,country
-    return String(exif["City"] ?? "") + "," + String(exif["State"] ?? "") + "," + String(exif["Country"] ?? "");
-}
-
 const photos = defineCollection({
     schema: ({ image }) => z.object({
         slug: z.string().min(1),
         name: z.string().min(1),
         album_slug: z.string().min(1),
+        // Folder name as it sits on disk. album_slug is lossy (slugify strips the
+        // apostrophes and case in names like "US_26'_AZ"), and the map page's
+        // location overrides in config.tsx are keyed by the real folder name.
+        album_name: z.string().min(1),
         exif: z.record(z.string(), z.any()),
         sort_timestamp: z.number().min(0),
         path: image()
@@ -100,7 +105,6 @@ const photos = defineCollection({
     loader: async () => {
         console.log(`Loading photos from ${photosPath}`);
         const albumDirs = await fs.readdir(photosPath, { withFileTypes: true });
-        let locDict: { [key: string]: number } = {};
 
         const results = await Promise.all(albumDirs.map(
             async (dirent) => {
@@ -115,17 +119,15 @@ const photos = defineCollection({
                                 const filePath = `${albumPath}/${fileEntry.name}`;
                                 try {
                                     const exifData: ExifData = exifr_filter(await exifr.parse(filePath, exifr_options) || {});
-                                    const locString = build_loc(exifData);
-                                    locDict[locString] = (locDict[locString] || 0) + 1;
                                     return {
                                         id: `${albumName}/${fileEntry.name}`,
                                         slug: slugify(fileEntry.name, { lower: true, strict: true }),
                                         album_slug: slugify(albumName, { lower: true, strict: true }),
+                                        album_name: albumName,
                                         name: fileEntry.name,
                                         path: `../src/assets/images/${albumName}/${fileEntry.name}`,
                                         exif: exifData,
                                         sort_timestamp: get_date(exifData.DateTimeOriginal),
-                                        locString: locString
                                     };
                                 } catch (error) {
                                     console.error(`Error reading EXIF data from ${filePath}:`, error);
@@ -133,11 +135,11 @@ const photos = defineCollection({
                                         id: `${albumName}/${fileEntry.name}`,
                                         slug: slugify(fileEntry.name, { lower: true, strict: true }),
                                         album_slug: slugify(albumName, { lower: true, strict: true }),
+                                        album_name: albumName,
                                         name: fileEntry.name,
                                         path: `../src/assets/images/${albumName}/${fileEntry.name}`,
                                         exif: {},
                                         sort_timestamp: 0,
-                                        locString: "unknown"
                                     };
                                 }
                             }
